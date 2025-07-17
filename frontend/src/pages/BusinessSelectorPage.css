@@ -1,0 +1,60 @@
+/* frontend/src/pages/BusinessSelectorPage.css */
+.selector-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f2f5;
+    padding: 2rem;
+    box-sizing: border-box;
+}
+.selector-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+.selector-header h2 {
+    font-size: 2rem;
+    color: #333;
+}
+.selector-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    max-width: 900px;
+}
+.selector-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    width: 250px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+}
+.selector-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+.selector-card h3 {
+    margin-top: 0;
+    font-size: 1.25rem;
+}
+.role-tag {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #007bff;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+.selector-footer {
+    margin-top: 2rem;
+}

@@ -1,0 +1,24 @@
+/* frontend/src/components/inventory/Inventory.css */
+.inventory-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.inventory-table th,
+.inventory-table td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.inventory-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+}
+
+.inventory-table tbody tr:hover {
+    background-color: #f1f3f5;
+}

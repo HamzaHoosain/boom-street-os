@@ -1,0 +1,12 @@
+/* frontend/src/components/layout/Layout.css */
+.app-layout {
+    display: flex;
+}
+
+.content-area {
+    flex-grow: 1;
+    padding: 2rem;
+    height: 100vh;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+}
