@@ -10,7 +10,9 @@ import DashboardPage from './pages/DashboardPage';
 import BusinessSelectorPage from './pages/BusinessSelectorPage';
 import PosPage from './pages/PosPage';
 import InventoryPage from './pages/InventoryPage';
+import EditProductPage from './pages/EditProductPage';
 import SuppliersPage from './pages/SuppliersPage';
+import CustomersPage from './pages/CustomersPage';
 import './App.css';
 
 function App() {
@@ -36,6 +38,8 @@ function App() {
               <Route path="/" element={<DashboardPage />} />
               <Route path="/pos" element={<PosPage />} />
               <Route path="/inventory" element={<InventoryPage />} />
+              <Route path="/inventory/edit/:productId" element={<EditProductPage />} />
+              <Route path="/customers" element={<CustomersPage />} />
               <Route path="/suppliers" element={<SuppliersPage />} />
               <Route path="*" element={<Navigate to="/" />} />
             </Routes>

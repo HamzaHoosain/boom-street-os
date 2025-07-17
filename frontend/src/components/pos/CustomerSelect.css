@@ -1,0 +1,33 @@
+/* frontend/src/components/pos/CustomerSelect.css */
+.customer-select-container {
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 1rem;
+}
+.customer-select-container h4 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+}
+.customer-display {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #e9ecef;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+}
+.customer-display p {
+    margin: 0;
+    font-weight: 500;
+}
+.btn-assign {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #f8f9fa;
+    border: 1px dashed #ccc;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-assign:hover {
+    background-color: #e9ecef;
+}

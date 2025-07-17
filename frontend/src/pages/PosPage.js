@@ -3,29 +3,51 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import ProductList from '../components/pos/ProductList';
 import Cart from '../components/pos/Cart';
+import CategorySidebar from '../components/pos/CategorySidebar'; // Import new component
 import '../components/pos/Pos.css';
 
 const PosPage = () => {
-    const [products, setProducts] = useState([]);
+    const [allProducts, setAllProducts] = useState([]); // All products from the API
+    const [filteredProducts, setFilteredProducts] = useState([]); // Products to display
+    const [categories, setCategories] = useState([]);
+    const [selectedCategoryId, setSelectedCategoryId] = useState(null); // To track selected category
     const [cartItems, setCartItems] = useState([]);
     const [error, setError] = useState('');
-    const [success, setSuccess] = useState(''); // To show a success message
+    const [success, setSuccess] = useState('');
 
+    // Fetch both products and categories on component load
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchData = async () => {
             try {
-                const response = await api.get('/products/1'); 
-                setProducts(response.data);
+                const [productsResponse, categoriesResponse] = await Promise.all([
+                    api.get('/products/1'), // Hardcoded to Autopaints (business_unit_id: 1)
+                    api.get('/categories')
+                ]);
+                setAllProducts(productsResponse.data);
+                setFilteredProducts(productsResponse.data); // Initially, show all products
+                setCategories(categoriesResponse.data);
             } catch (err) {
-                setError('Failed to fetch products.');
+                setError('Failed to fetch data.');
                 console.error(err);
             }
         };
-        fetchProducts();
+        fetchData();
     }, []);
 
+    // This effect runs whenever the selected category changes
+    useEffect(() => {
+        if (selectedCategoryId === null) {
+            setFilteredProducts(allProducts); // Show all products
+        } else {
+            // Filter products based on the selected category ID
+            setFilteredProducts(
+                allProducts.filter(p => p.category_id === selectedCategoryId)
+            );
+        }
+    }, [selectedCategoryId, allProducts]);
+
     const handleAddToCart = (product) => {
-        setSuccess(''); // Clear success message on new action
+        setSuccess('');
         setCartItems((prevItems) => {
             const itemExists = prevItems.find((item) => item.id === product.id);
             if (itemExists) {
@@ -49,66 +71,49 @@ const PosPage = () => {
         });
     };
 
-    // ==========================================================
-    // --- NEW FUNCTION TO PROCESS THE SALE ---
-    // ==========================================================
     const handleProcessSale = async () => {
         setError('');
         setSuccess('');
+        if (cartItems.length === 0) return;
 
-        if (cartItems.length === 0) {
-            setError("Cannot process an empty cart.");
-            return;
-        }
-
-        // 1. Calculate the total amount from the cart items on the frontend
-        const total_amount = cartItems.reduce((total, item) => {
-            return total + (parseFloat(item.selling_price) * item.quantity);
-        }, 0);
-
-        // 2. Prepare the payload for the API
+        const total_amount = cartItems.reduce((total, item) => total + (parseFloat(item.selling_price) * item.quantity), 0);
         const saleData = {
-            business_unit_id: 1, // Hardcoded to Autopaints for now
-            total_amount: total_amount,
-            // The API expects 'cart_items' with specific fields
-            cart_items: cartItems.map(item => ({
-                id: item.id,
-                quantity: item.quantity,
-                selling_price: item.selling_price
-            }))
+            business_unit_id: 1,
+            total_amount,
+            cart_items: cartItems.map(item => ({ id: item.id, quantity: item.quantity, selling_price: item.selling_price }))
         };
 
-        // 3. Send the data to the backend API
         try {
             const response = await api.post('/sales', saleData);
             setSuccess(`Sale #${response.data.saleId} processed successfully!`);
-            // 4. Clear the cart for the next customer
             setCartItems([]);
         } catch (err) {
             setError('Sale failed to process. Please try again.');
             console.error(err);
         }
     };
-    // ==========================================================
-    // --- END OF NEW FUNCTION ---
-    // ==========================================================
-
 
     return (
         <div>
             <h1>Point of Sale</h1>
             {error && <p className="alert-error">{error}</p>}
-            {success && <p className="alert-success">{success}</p>} {/* Display success message */}
+            {success && <p className="alert-success">{success}</p>}
             <div className="pos-layout">
+                {/* Add the new Category Sidebar */}
+                <CategorySidebar
+                    categories={categories}
+                    selectedCategoryId={selectedCategoryId}
+                    onSelectCategory={setSelectedCategoryId}
+                />
                 <div className="product-list-container">
-                    <ProductList products={products} onAddToCart={handleAddToCart} />
+                    {/* ProductList now receives the filtered list */}
+                    <ProductList products={filteredProducts} onAddToCart={handleAddToCart} />
                 </div>
                 <div className="cart-container">
-                    {/* Pass the new function as a prop to the Cart */}
-                    <Cart 
-                        cartItems={cartItems} 
+                    <Cart
+                        cartItems={cartItems}
                         onRemoveFromCart={handleRemoveFromCart}
-                        onProcessSale={handleProcessSale} 
+                        onProcessSale={handleProcessSale}
                     />
                 </div>
             </div>

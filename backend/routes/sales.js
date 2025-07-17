@@ -4,26 +4,26 @@ const router = express.Router();
 const db = require('../db');
 const authMiddleware = require('../middleware/authMiddleware');
 
+// backend/routes/sales.js - ENHANCED
 // @route   POST api/sales
-// @desc    Process a new sale
+// @desc    Process a new sale (now with optional customer_id)
 // @access  Private
 router.post('/', authMiddleware, async (req, res) => {
-    const { business_unit_id, cart_items, total_amount } = req.body;
-    const user_id = req.user.id; // From our authMiddleware
+    // Add customer_id to the destructured request body
+    const { business_unit_id, cart_items, total_amount, customer_id } = req.body;
+    const user_id = req.user.id;
 
-    // Get a client from the connection pool to run a transaction
     const client = await db.pool.connect();
 
     try {
-        // Start a database transaction
         await client.query('BEGIN');
 
-        // 1. Create a record in the 'sales' table
-        const saleQuery = 'INSERT INTO sales (business_unit_id, user_id, total_amount) VALUES ($1, $2, $3) RETURNING id, sale_date';
-        const saleResult = await client.query(saleQuery, [business_unit_id, user_id, total_amount]);
+        // 1. Create a record in the 'sales' table, now including the customer_id
+        // The customer_id can be null if no customer is assigned.
+        const saleQuery = 'INSERT INTO sales (business_unit_id, user_id, total_amount, customer_id) VALUES ($1, $2, $3, $4) RETURNING id, sale_date';
+        const saleResult = await client.query(saleQuery, [business_unit_id, user_id, total_amount, customer_id || null]);
         const newSaleId = saleResult.rows[0].id;
-        const saleDate = saleResult.rows[0].sale_date;
-
+        
         // 2. Loop through cart items, update inventory and log sale items
         for (const item of cart_items) {
             // 2a. Insert into 'sale_items'
