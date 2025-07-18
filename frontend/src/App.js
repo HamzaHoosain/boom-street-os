@@ -8,6 +8,7 @@ import LoginPage from './pages/LoginPage';
 import BusinessSelectorPage from './pages/BusinessSelectorPage';
 import DashboardPage from './pages/DashboardPage';
  import ScrapyardPage from './pages/ScrapyardPage';
+import ReportsPage from './pages/ReportsPage';
 import PosPage from './pages/PosPage';
 import InventoryPage from './pages/InventoryPage';
 import EditProductPage from './pages/EditProductPage';
@@ -50,6 +51,7 @@ function App() {
           <Route path="/inventory/edit/:productId" element={<EditProductPage />} />
           <Route path="/suppliers" element={<SuppliersPage />} />
           <Route path="/customers" element={<CustomersPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
           <Route path="/scrapyard" element={<ScrapyardPage />} />
           <Route path="/sales-history" element={<SalesHistoryPage />} />
           {/* Add all other protected routes here */}

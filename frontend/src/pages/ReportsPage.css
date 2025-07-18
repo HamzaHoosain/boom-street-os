@@ -1,0 +1,37 @@
+/* frontend/src/pages/ReportsPage.css */
+.report-controls {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+    background: #fff;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+.report-container {
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+}
+.report-summary {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    text-align: center;
+}
+.summary-item {
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+.summary-item span {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+}
+.summary-item strong {
+    font-size: 2rem;
+}
+.summary-item.income { background-color: #d4edda; color: #155724; }
+.summary-item.expense { background-color: #f8d7da; color: #721c24; }
+.summary-item.profit { background-color: #cce5ff; color: #004085; }

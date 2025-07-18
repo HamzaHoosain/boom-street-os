@@ -1,0 +1,29 @@
+/* frontend/src/pages/DashboardPage.css */
+.widget-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.widget {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    text-align: center;
+}
+
+.widget h3 {
+    margin-top: 0;
+    font-size: 1rem;
+    color: #555;
+    text-transform: uppercase;
+}
+
+.widget-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #007bff;
+    margin-bottom: 0;
+}
