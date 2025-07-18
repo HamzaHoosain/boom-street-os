@@ -1,24 +1,23 @@
-// frontend/src/pages/BusinessSelectorPage.js - CORRECTED
+// File: frontend/src/pages/BusinessSelectorPage.js
 import React, { useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import './BusinessSelectorPage.css';
 
 const BusinessSelectorPage = () => {
     const { user, selectBusiness, logout } = useContext(AuthContext);
+    const navigate = useNavigate();
 
-    // --- THIS IS THE FIX ---
-    // If the user object is not yet available, render a loading state
-    // or nothing at all. This prevents the component from crashing.
     if (!user || !user.assignments) {
-        return <div>Loading user data...</div>;
+        // This is a safeguard
+        return <p>Loading user data or redirecting...</p>;
     }
-    // --- END OF FIX ---
 
     const handleSelect = (assignment) => {
         selectBusiness(assignment);
+        navigate('/'); // Go to dashboard after selection
     };
 
-    // Now it is safe to run this line, because we know 'user.assignments' exists.
     const isAdmin = user.assignments.some(a => a.role_name === 'Admin' && !a.business_unit_id);
 
     return (
@@ -35,7 +34,6 @@ const BusinessSelectorPage = () => {
                         <span className="role-tag">Admin</span>
                     </div>
                 )}
-                
                 {user.assignments.map((assignment, index) => {
                     if (!assignment.business_unit_id) return null;
                     return (
@@ -48,10 +46,9 @@ const BusinessSelectorPage = () => {
                 })}
             </div>
             <div className="selector-footer">
-                <button onClick={logout}>Logout</button>
+                <button onClick={() => { logout(); navigate('/login'); }}>Logout</button>
             </div>
         </div>
     );
 };
-
 export default BusinessSelectorPage;

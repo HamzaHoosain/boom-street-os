@@ -1,0 +1,68 @@
+/* frontend/src/pages/InvoicePage.css */
+body {
+    background-color: #eee;
+}
+.invoice-container {
+    width: 800px;
+    margin: 2rem auto;
+    background: white;
+    padding: 2.5rem;
+    box-shadow: 0 0 15px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+}
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    border-bottom: 2px solid #333;
+    padding-bottom: 1rem;
+}
+.invoice-header h1 { margin: 0; }
+.company-details { text-align: right; }
+.invoice-meta, .customer-details { margin-bottom: 2rem; }
+.invoice-items {
+    width: 100%;
+    border-collapse: collapse;
+}
+.invoice-items th, .invoice-items td {
+    border-bottom: 1px solid #eee;
+    padding: 0.75rem;
+    text-align: left;
+}
+.invoice-items th { background: #f8f9fa; }
+.invoice-items td:nth-child(3), .invoice-items td:nth-child(4), .invoice-items td:nth-child(5) {
+    text-align: right;
+}
+.invoice-footer {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 2px solid #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.invoice-total {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+.thank-you-note { color: #555; }
+
+/* Styles for printing */
+@media print {
+    body {
+        background-color: white; /* Remove gray background for printing */
+    }
+    .invoice-container {
+        width: 100%;
+        margin: 0;
+        box-shadow: none;
+        padding: 0;
+    }
+    /* Hide the sidebar and other app UI when printing */
+    .app-layout .sidebar, .non-printable {
+        display: none;
+    }
+    .content-area {
+        padding: 0;
+    }
+}

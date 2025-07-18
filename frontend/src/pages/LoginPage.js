@@ -1,4 +1,4 @@
-// frontend/src/pages/LoginPage.js
+// File: frontend/src/pages/LoginPage.js
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
@@ -9,25 +9,20 @@ const LoginPage = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
-    const [loading, setLoading] = useState(false);
     const { login } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setLoading(true);
         setMessage('');
         try {
             const response = await authService.login(email, password);
             if (response.data.token) {
                 login(response.data);
-                // After successful login and context update, go to the selector
-                navigate('/select-business');
+                navigate('/select-business'); // Go to selector after login
             }
         } catch (error) {
-            const resMessage = (error.response?.data?.msg) || "An error occurred";
-            setMessage(resMessage);
-            setLoading(false);
+            setMessage((error.response?.data?.msg) || "Login failed!");
         }
     };
 
@@ -37,17 +32,15 @@ const LoginPage = () => {
                 <h2>Boom Street OS</h2>
                 <form onSubmit={handleLogin}>
                     <div className="form-group">
-                        <label htmlFor="email">Email</label>
-                        <input type="text" className="form-control" name="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                        <label>Email</label>
+                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="form-control" required />
                     </div>
                     <div className="form-group">
-                        <label htmlFor="password">Password</label>
-                        <input type="password" className="form-control" name="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                        <label>Password</label>
+                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="form-control" required />
                     </div>
-                    <div className="form-group">
-                        <button type="submit" className="btn-login" disabled={loading}>Login</button>
-                    </div>
-                    {message && (<div className="form-group"><div className="alert-error" role="alert">{message}</div></div>)}
+                    <button type="submit" className="btn-login">Login</button>
+                    {message && <p className="alert-error" style={{marginTop: '1rem'}}>{message}</p>}
                 </form>
             </div>
         </div>

@@ -1,41 +1,23 @@
-// frontend/src/context/AuthContext.js
+// File: frontend/src/context/AuthContext.js
 import React, { createContext, useState, useEffect } from 'react';
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [selectedBusiness, setSelectedBusiness] = useState(null);
-    const [token, setToken] = useState(null);
+    const [token, setToken] = useState(localStorage.getItem('token'));
+    const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')));
+    const [selectedBusiness, setSelectedBusiness] = useState(JSON.parse(localStorage.getItem('selectedBusiness')));
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const storedToken = localStorage.getItem('token');
-        const storedUser = localStorage.getItem('user');
-        const storedBusiness = localStorage.getItem('selectedBusiness');
-
-        if (storedToken && storedUser) {
-            setToken(storedToken);
-            setUser(JSON.parse(storedUser));
-        }
-        if (storedBusiness) {
-            setSelectedBusiness(JSON.parse(storedBusiness));
-        }
         setLoading(false);
     }, []);
 
     const login = (userData) => {
-        localStorage.setItem('user', JSON.stringify(userData.user));
         localStorage.setItem('token', userData.token);
-        setUser(userData.user);
+        localStorage.setItem('user', JSON.stringify(userData.user));
         setToken(userData.token);
-    };
-
-    const logout = () => {
-        localStorage.clear(); // Clears everything
-        setUser(null);
-        setToken(null);
-        setSelectedBusiness(null);
+        setUser(userData.user);
     };
 
     const selectBusiness = (assignment) => {
@@ -43,8 +25,15 @@ export const AuthProvider = ({ children }) => {
         setSelectedBusiness(assignment);
     };
 
+    const logout = () => {
+        localStorage.clear();
+        setToken(null);
+        setUser(null);
+        setSelectedBusiness(null);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, token, selectedBusiness, loading, login, logout, selectBusiness }}>
+        <AuthContext.Provider value={{ token, user, selectedBusiness, loading, login, logout, selectBusiness }}>
             {children}
         </AuthContext.Provider>
     );

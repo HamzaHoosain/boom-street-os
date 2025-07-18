@@ -25,6 +25,7 @@ app.use('/api/reporting', require('./routes/reporting'));
 app.use('/api/suppliers', require('./routes/suppliers'));
 app.use('/api/categories', require('./routes/categories'));
 app.use('/api/customers', require('./routes/customers'));
+app.use('/api/invoices', require('./routes/invoices'));
 
 
 // --- SERVER STARTUP ---

@@ -22,3 +22,21 @@
 .inventory-table tbody tr:hover {
     background-color: #f1f3f5;
 }
+
+/* Add these styles to Inventory.css or a global CSS file */
+
+.sale-type-badge {
+    padding: 0.25rem 0.5rem;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: white;
+}
+
+.sale-type-badge.Retail {
+    background-color: #007bff; /* Blue */
+}
+
+.sale-type-badge.Scrap {
+    background-color: #28a745; /* Green */
+}

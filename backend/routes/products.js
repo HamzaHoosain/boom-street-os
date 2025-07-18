@@ -22,6 +22,21 @@ router.post('/', authMiddleware, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+router.get('/overview/all', authMiddleware, async (req, res) => {
+    try {
+        const query = `
+            SELECT p.*, bu.name as business_unit_name 
+            FROM products p
+            JOIN business_units bu ON p.business_unit_id = bu.id
+            ORDER BY bu.name, p.name
+        `;
+        const products = await db.query(query);
+        res.json(products.rows);
+    } catch (err) {
+        console.error("Product Overview Error:", err.message);
+        res.status(500).send('Server Error');
+    }
+});
 // @route   GET api/products/single/:id
 // @desc    Get a single product by its ID
 // @access  Private

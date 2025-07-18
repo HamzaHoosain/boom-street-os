@@ -1,0 +1,29 @@
+/* frontend/src/components/pos/CustomerSearchModal.css */
+.customer-search-modal input {
+    margin-bottom: 1rem;
+}
+.search-results {
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+.search-results ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.search-results li {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+}
+.search-results li:hover {
+    background-color: #f8f9fa;
+}
+.search-results li small {
+    color: #6c757d;
+}

@@ -1,0 +1,48 @@
+/* frontend/src/components/layout/Header.css */
+.app-header {
+    width: 100%;
+    padding: 1rem 2rem;
+    background-color: #fff;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+.header-context {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-context h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.header-context select {
+    font-size: 1.5rem;
+    font-weight: 700;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.role-tag-header {
+    background-color: #6c757d;
+    color: white;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.header-actions button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+}

@@ -87,3 +87,38 @@
     flex-direction: row; /* Ensure horizontal layout */
     align-items: stretch; /* Make children fill height */
 }
+.price-editable {
+    cursor: pointer;
+    text-decoration: underline dashed #007bff;
+}
+
+.price-input {
+    width: 80px;
+    text-align: right;
+    border: 1px solid #007bff;
+    border-radius: 4px;
+    padding: 0.25rem;
+}
+
+/* Add this to Pos.css */
+.btn-print {
+    margin-left: 1rem;
+    padding: 0.25rem 0.75rem;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.btn-print:hover {
+    background-color: #0056b3;
+}
+
+/* Also, make the success alert a flex container */
+.alert-success {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
