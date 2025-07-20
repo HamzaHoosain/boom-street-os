@@ -4,10 +4,14 @@
     border-bottom: 1px solid #eee;
     margin-bottom: 1rem;
 }
+
 .customer-select-container h4 {
     margin-top: 0;
     margin-bottom: 0.5rem;
+    font-size: 1rem;
+    color: #495057;
 }
+
 .customer-display {
     display: flex;
     justify-content: space-between;
@@ -16,18 +20,33 @@
     padding: 0.5rem 1rem;
     border-radius: 4px;
 }
+
 .customer-display p {
     margin: 0;
     font-weight: 500;
 }
+
+.customer-display button {
+    background: #6c757d;
+    color: white;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
 .btn-assign {
     width: 100%;
     padding: 0.75rem;
     background-color: #f8f9fa;
     border: 1px dashed #ccc;
     cursor: pointer;
+    border-radius: 4px;
     transition: background-color 0.2s;
+    font-weight: 500;
 }
+
 .btn-assign:hover {
     background-color: #e9ecef;
 }

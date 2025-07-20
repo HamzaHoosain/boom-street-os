@@ -1,22 +1,25 @@
-// frontend/src/components/pos/Cart.js - ENHANCED
 import React, { useContext, useState } from 'react';
-import { AuthContext } from '../../context/AuthContext'; // We need the user's role
+import { useAuth } from '../../context/useAuth';
 
-const Cart = ({ cartItems, onRemoveFromCart, onProcessSale, onUpdatePrice }) => {
-    const { selectedBusiness } = useContext(AuthContext); // Get the user's current role
-    const [editingItem, setEditingItem] = useState(null); // Track which item is being edited
+const Cart = ({ cartItems, onRemoveFromCart, onProcessSale, onUpdatePrice, isBuyMode }) => {
+    const { currentRole } = useAuth();
+    const [editingItemCartId, setEditingItemCartId] = useState(null);
     const [newPrice, setNewPrice] = useState('');
 
     const calculateTotal = () => {
-        return cartItems.reduce((total, item) => total + parseFloat(item.selling_price) * item.quantity, 0);
+        return cartItems.reduce((total, item) => {
+            // KEY FIX: Use the correct price based on the mode
+            const price = isBuyMode ? parseFloat(item.cost_price) : parseFloat(item.selling_price);
+            return total + price * item.quantity;
+        }, 0);
     };
 
-    // Check if the user has a privileged role
-    const canOverridePrice = selectedBusiness?.role_name === 'Admin' || selectedBusiness?.role_name === 'Manager';
+    // Price overrides are only possible in Sell Mode by authorized users
+    const canOverridePrice = !isBuyMode && (currentRole === 'Admin' || currentRole === 'Manager');
 
     const handlePriceClick = (item) => {
-        if (!canOverridePrice) return; // Do nothing if user is not an admin/manager
-        setEditingItem(item.id);
+        if (!canOverridePrice) return;
+        setEditingItemCartId(item.cartId);
         setNewPrice(item.selling_price);
     };
 
@@ -24,35 +27,40 @@ const Cart = ({ cartItems, onRemoveFromCart, onProcessSale, onUpdatePrice }) => 
         setNewPrice(e.target.value);
     };
 
-    const handlePriceBlur = (item) => {
-        // When the input loses focus, update the price
+    const handlePriceUpdate = (item) => {
         const price = parseFloat(newPrice);
         if (!isNaN(price) && price >= 0) {
-            onUpdatePrice(item.id, price);
+            onUpdatePrice(item.cartId, price);
         }
-        setEditingItem(null); // Stop editing
+        setEditingItemCartId(null);
     };
     
     const handleKeyPress = (e, item) => {
         if (e.key === 'Enter') {
-            handlePriceBlur(item);
+            handlePriceUpdate(item);
         }
+    };
+
+    const getItemTotal = (item) => {
+        // KEY FIX: Use the correct price for the line item total based on the mode
+        const price = isBuyMode ? item.cost_price : item.selling_price;
+        return (parseFloat(price) * item.quantity).toFixed(2);
     };
 
     return (
         <div className="cart">
-            <h3>Current Sale</h3>
+            <h3>{isBuyMode ? 'Purchase Order' : 'Current Sale'}</h3>
             <ul className="cart-items">
                 {cartItems.map((item) => (
-                    <li key={item.id}>
-                        <span>{item.name} (x{item.quantity})</span>
+                    <li key={item.cartId}>
+                        <span>{item.name} (x {item.quantity}{isBuyMode ? 'kg' : ''})</span>
                         
-                        {editingItem === item.id ? (
+                        {!isBuyMode && editingItemCartId === item.cartId ? (
                             <input
                                 type="number"
                                 value={newPrice}
                                 onChange={handlePriceChange}
-                                onBlur={() => handlePriceBlur(item)}
+                                onBlur={() => handlePriceUpdate(item)}
                                 onKeyPress={(e) => handleKeyPress(e, item)}
                                 autoFocus
                                 className="price-input"
@@ -62,7 +70,7 @@ const Cart = ({ cartItems, onRemoveFromCart, onProcessSale, onUpdatePrice }) => 
                                 className={canOverridePrice ? 'price-editable' : ''}
                                 onClick={() => handlePriceClick(item)}
                             >
-                                R {(parseFloat(item.selling_price) * item.quantity).toFixed(2)}
+                                R {getItemTotal(item)}
                             </span>
                         )}
                         
@@ -71,14 +79,14 @@ const Cart = ({ cartItems, onRemoveFromCart, onProcessSale, onUpdatePrice }) => 
                 ))}
             </ul>
             <div className="cart-total">
-                <strong>Total: R {calculateTotal().toFixed(2)}</strong>
+                <strong>{isBuyMode ? 'Total Payout:' : 'Total:'} R {calculateTotal().toFixed(2)}</strong>
             </div>
             <button 
-                className="btn-process-sale" 
+                className={isBuyMode ? 'btn-buy' : 'btn-process-sale'} 
                 disabled={cartItems.length === 0}
                 onClick={onProcessSale}
             >
-                Process Sale
+                {isBuyMode ? 'Process Payout' : 'Process Sale'}
             </button>
         </div>
     );

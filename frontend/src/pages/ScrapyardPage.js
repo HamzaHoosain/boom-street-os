@@ -1,136 +1,130 @@
-// frontend/src/pages/ScrapyardPage.js
-import React, { useState, useEffect, useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import './ScrapyardPage.css';
 
 const ScrapyardPage = () => {
-    const { selectedBusiness } = useContext(AuthContext);
-    const [materials, setMaterials] = useState([]); // List of scrap materials we buy/sell
+    const [materials, setMaterials] = useState([]);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
-    // --- State for the "Buy Scrap" Form ---
-    const [buyMaterialId, setBuyMaterialId] = useState('');
-    const [buyWeight, setBuyWeight] = useState('');
-
-    // --- State for the "Sell Scrap" Form ---
+    // State for the "Sell Scrap" Form
     const [sellMaterialId, setSellMaterialId] = useState('');
     const [sellWeight, setSellWeight] = useState('');
     const [sellRevenue, setSellRevenue] = useState('');
+    const [buyer, setBuyer] = useState(''); // New field for the buyer's name
 
-
-    useEffect(() => {
-        // Fetch the list of scrap materials for the dropdowns
-        const fetchMaterials = async () => {
-            // Paradise Scrap is business_unit_id 2
-            try {
-                const response = await api.get('/products/2');
-                setMaterials(response.data);
-            } catch (err) {
-                setError('Failed to load scrap materials.');
-            }
-        };
-        fetchMaterials();
-    }, []);
-
-    const handleBuySubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setSuccess('');
-
-        const selectedMaterial = materials.find(m => m.id === parseInt(buyMaterialId));
-        const payout = (selectedMaterial.cost_price * parseFloat(buyWeight)).toFixed(2);
-        
-        // Confirmation prompt
-        if (!window.confirm(`Payout will be R${payout}. Proceed?`)) {
-            return;
-        }
-
+    const fetchMaterials = async () => {
         try {
-            await api.post('/scrapyard/buy', {
-                business_unit_id: 2,
-                product_id: parseInt(buyMaterialId),
-                weight_kg: parseFloat(buyWeight)
-            });
-            setSuccess(`Successfully bought ${buyWeight}kg of ${selectedMaterial.name}. Payout: R${payout}`);
-            // Reset form
-            setBuyMaterialId('');
-            setBuyWeight('');
+            // Always fetch materials for Paradise Scrap (business_unit_id: 2)
+            const response = await api.get('/products/2');
+            setMaterials(response.data);
         } catch (err) {
-            setError('Failed to process purchase.');
+            setError('Failed to load scrap materials.');
+            console.error(err);
         }
     };
+
+    // Fetch the materials when the component first loads
+    useEffect(() => {
+        fetchMaterials();
+    }, []);
 
     const handleSellSubmit = async (e) => {
         e.preventDefault();
         setError('');
         setSuccess('');
 
+        // Client-side validation to check for available stock
+        const selectedMaterial = materials.find(m => m.id === parseInt(sellMaterialId));
+        if (parseFloat(sellWeight) > parseFloat(selectedMaterial.quantity_on_hand)) {
+            setError(`Not enough stock. Only ${selectedMaterial.quantity_on_hand} kg of ${selectedMaterial.name} available.`);
+            return;
+        }
+
         try {
-            const selectedMaterial = materials.find(m => m.id === parseInt(sellMaterialId));
             await api.post('/scrapyard/sell', {
-                business_unit_id: 2,
+                business_unit_id: 2, // Hardcoded to Paradise Scrap
                 product_id: parseInt(sellMaterialId),
                 weight_kg: parseFloat(sellWeight),
                 revenue_amount: parseFloat(sellRevenue)
+                // In a future step, we can enhance the backend to save the 'buyer' name.
             });
-            setSuccess(`Successfully sold ${sellWeight}kg of ${selectedMaterial.name} for R${sellRevenue}.`);
-            // Reset form
+            setSuccess(`Successfully sold ${sellWeight}kg of ${selectedMaterial.name} to ${buyer} for R ${sellRevenue}.`);
+            
+            // Reset the form fields for the next entry
             setSellMaterialId('');
             setSellWeight('');
             setSellRevenue('');
+            setBuyer('');
+
+            // Re-fetch materials to update the stock levels shown in the dropdown
+            fetchMaterials();
+
         } catch (err) {
-            setError('Failed to process sale.');
+            setError('Failed to process sale. Please check the details and try again.');
+            console.error(err);
         }
     };
 
     return (
         <div>
-            <h1>Scrapyard Operations</h1>
-            {error && <p className="alert-error">{error}</p>}
-            {success && <p className="alert-success">{success}</p>}
+            <h1>Bulk Scrap Sales Terminal</h1>
+            {error && <p className="alert-error" style={{marginTop: '1rem'}}>{error}</p>}
+            {success && <p className="alert-success" style={{marginTop: '1rem'}}>{success}</p>}
 
-            <div className="scrapyard-layout">
-                {/* --- BUY SCRAP FORM --- */}
+            <div className="scrapyard-layout-single">
                 <div className="form-container">
-                    <h2>Buy Scrap</h2>
-                    <form onSubmit={handleBuySubmit}>
-                        <div className="form-group">
-                            <label>Material</label>
-                            <select value={buyMaterialId} onChange={(e) => setBuyMaterialId(e.target.value)} className="form-control" required>
-                                <option value="">-- Select Material --</option>
-                                {materials.map(m => <option key={m.id} value={m.id}>{m.name} (R{m.cost_price}/kg)</option>)}
-                            </select>
-                        </div>
-                        <div className="form-group">
-                            <label>Weight (kg)</label>
-                            <input type="number" step="0.01" value={buyWeight} onChange={(e) => setBuyWeight(e.target.value)} className="form-control" required />
-                        </div>
-                        <button type="submit" className="btn-buy">Process Purchase</button>
-                    </form>
-                </div>
-
-                {/* --- SELL SCRAP FORM --- */}
-                <div className="form-container">
-                    <h2>Sell Scrap</h2>
+                    <h2>Sell Scrap to Processors</h2>
                     <form onSubmit={handleSellSubmit}>
                         <div className="form-group">
-                            <label>Material</label>
-                            <select value={sellMaterialId} onChange={(e) => setSellMaterialId(e.target.value)} className="form-control" required>
+                            <label>Buyer (e.g., RECLAM, Wayne's Scrap)</label>
+                            <input 
+                                type="text" 
+                                value={buyer} 
+                                onChange={(e) => setBuyer(e.target.value)} 
+                                className="form-control" 
+                                required 
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label>Material (Current Stock Available)</label>
+                            <select 
+                                value={sellMaterialId} 
+                                onChange={(e) => setSellMaterialId(e.target.value)} 
+                                className="form-control" 
+                                required
+                            >
                                 <option value="">-- Select Material --</option>
-                                {materials.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                                {materials.map(m => (
+                                    <option key={m.id} value={m.id}>
+                                        {m.name} ({parseFloat(m.quantity_on_hand).toFixed(2)} kg available)
+                                    </option>
+                                ))}
                             </select>
                         </div>
                         <div className="form-group">
-                            <label>Weight (kg)</label>
-                            <input type="number" step="0.01" value={sellWeight} onChange={(e) => setSellWeight(e.target.value)} className="form-control" required />
+                            <label>Weight to Sell (kg)</label>
+                            <input 
+                                type="number" 
+                                step="0.01" 
+                                value={sellWeight} 
+                                onChange={(e) => setSellWeight(e.target.value)} 
+                                className="form-control" 
+                                required 
+                            />
                         </div>
                         <div className="form-group">
-                            <label>Total Revenue (R)</label>
-                            <input type="number" step="0.01" value={sellRevenue} onChange={(e) => setSellRevenue(e.target.value)} className="form-control" required />
+                            <label>Total Revenue Received (R)</label>
+                            <input 
+                                type="number" 
+                                step="0.01" 
+                                value={sellRevenue} 
+                                onChange={(e) => setSellRevenue(e.target.value)} 
+                                className="form-control" 
+                                required 
+                            />
                         </div>
-                        <button type="submit" className="btn-sell">Process Sale</button>
+                        <button type="submit" className="btn-sell">Process Bulk Sale</button>
                     </form>
                 </div>
             </div>

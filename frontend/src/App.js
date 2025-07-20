@@ -1,40 +1,44 @@
-// File: frontend/src/App.js
+// frontend/src/App.js - FINAL CORRECTED VERSION
 import React, { useContext } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, Outlet } from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
 
 import Layout from './components/layout/Layout';
 import LoginPage from './pages/LoginPage';
+import ExpensesPage from './pages/ExpensesPage';
 import BusinessSelectorPage from './pages/BusinessSelectorPage';
 import DashboardPage from './pages/DashboardPage';
- import ScrapyardPage from './pages/ScrapyardPage';
-import ReportsPage from './pages/ReportsPage';
 import PosPage from './pages/PosPage';
 import InventoryPage from './pages/InventoryPage';
 import EditProductPage from './pages/EditProductPage';
 import SuppliersPage from './pages/SuppliersPage';
-import SalesHistoryPage from './pages/SalesHistoryPage';
 import CustomersPage from './pages/CustomersPage';
 import InvoicePage from './pages/InvoicePage';
+import TransactionHistoryPage from './pages/TransactionHistoryPage'; // The new unified page
+import CashManagementPage from './pages/CashManagementPage';
 
-// This is our new, simplified Gatekeeper component
+// This is our simple Gatekeeper component
 const ProtectedRoutes = () => {
-    const { token, selectedBusiness, loading } = useContext(AuthContext);
+    const { token, selectedBusiness } = useContext(AuthContext);
 
-    if (loading) return <div>Loading Application...</div>;
-    
     if (!token) return <Navigate to="/login" />;
     if (!selectedBusiness) return <Navigate to="/select-business" />;
 
-    // If all checks pass, show the main application layout
+    // If all checks pass, show the main application layout which contains the page
     return (
         <Layout>
-            <Outlet /> {/* This will render the matched child route */}
+            <Outlet /> 
         </Layout>
     );
 };
 
 function App() {
+  const { loading } = useContext(AuthContext);
+
+  if (loading) {
+    return <div>Application is loading...</div>;
+  }
+
   return (
     <Router>
       <Routes>
@@ -49,11 +53,11 @@ function App() {
           <Route path="/pos" element={<PosPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/inventory/edit/:productId" element={<EditProductPage />} />
+          <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/suppliers" element={<SuppliersPage />} />
           <Route path="/customers" element={<CustomersPage />} />
-          <Route path="/reports" element={<ReportsPage />} />
-          <Route path="/scrapyard" element={<ScrapyardPage />} />
-          <Route path="/sales-history" element={<SalesHistoryPage />} />
+          <Route path="/transactions" element={<TransactionHistoryPage />} />
+          <Route path="/cash-management" element={<CashManagementPage />} />
           {/* Add all other protected routes here */}
         </Route>
         

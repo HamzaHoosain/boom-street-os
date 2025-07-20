@@ -4,6 +4,35 @@ const router = express.Router();
 const db = require('../db');
 const authMiddleware = require('../middleware/authMiddleware');
 
+// Add this new route to backend/routes/payroll.js
+
+// @route   GET api/payroll/employees
+// @desc    Get a list of all employees with their details
+// @access  Private (Admin/Manager)
+router.get('/employees', authMiddleware, async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                e.id, 
+                e.user_id, 
+                u.first_name, 
+                u.last_name, 
+                bu.name as business_unit_name, 
+                e.pay_type, 
+                e.pay_rate 
+            FROM employees e
+            JOIN users u ON e.user_id = u.id
+            JOIN business_units bu ON e.business_unit_id = bu.id
+            ORDER BY u.first_name
+        `;
+        const employees = await db.query(query);
+        res.json(employees.rows);
+    } catch (err) {
+        console.error("Get Employees Error:", err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 // @route   POST api/payroll/employees
 // @desc    Onboard a user as an employee with pay details
 // @access  Private (Admin/Manager)

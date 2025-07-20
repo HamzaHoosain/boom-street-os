@@ -1,92 +1,134 @@
 /* frontend/src/components/pos/Pos.css */
 .pos-layout {
     display: flex;
-    gap: 2rem;
-    height: calc(100vh - 4rem); /* Full height minus padding */
+    flex-direction: row;
+    gap: 1.5rem;
+    height: calc(100vh - 10rem); /* Full height minus header and padding */
+    align-items: stretch;
 }
+
 .product-list-container {
     flex-grow: 1;
     overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    background-color: #fff;
 }
+
 .product-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 1rem;
 }
+
 .product-card {
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 1rem;
     text-align: center;
     cursor: pointer;
-    background: white;
-    transition: box-shadow 0.2s;
+    background: #f8f9fa;
+    transition: box-shadow 0.2s, transform 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
+
 .product-card:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
 }
+
 .product-name {
     font-weight: 500;
     margin-bottom: 0.5rem;
+    flex-grow: 1;
 }
+
+.product-price {
+    font-weight: 700;
+    color: #007bff;
+}
+
 .cart-container {
-    width: 350px;
+    width: 380px;
     flex-shrink: 0;
     background: #fff;
-    border-left: 1px solid #eee;
-    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0; /* Remove padding to make sections full-width */
     display: flex;
     flex-direction: column;
 }
+
+.cart {
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.cart h3 {
+    margin-top: 0;
+    text-align: center;
+}
+
 .cart-items {
     list-style: none;
     padding: 0;
+    margin: 0;
     flex-grow: 1;
+    overflow-y: auto;
 }
+
 .cart-items li {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.5rem 0;
+    padding: 0.75rem 0;
     border-bottom: 1px solid #f0f0f0;
 }
+
 .cart-items li button {
     background: #e74c3c;
     color: white;
     border: none;
     border-radius: 50%;
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     cursor: pointer;
+    line-height: 1;
+    font-size: 1rem;
 }
+
 .cart-total {
-    font-size: 1.2rem;
+    font-size: 1.25rem;
     margin-top: 1rem;
     text-align: right;
-    padding-top: 1rem;
+    padding: 1rem;
     border-top: 2px solid #333;
 }
-.btn-process-sale {
+
+.btn-process-sale, .btn-buy {
     width: 100%;
-    padding: 1rem;
+    padding: 1.25rem;
     font-size: 1.2rem;
-    background: #2ecc71;
+    font-weight: 700;
     color: white;
     border: none;
-    border-radius: 4px;
     cursor: pointer;
-    margin-top: 1rem;
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
-.btn-process-sale:disabled {
+.btn-process-sale { background: #2ecc71; }
+.btn-buy { background: #28a745; }
+
+.btn-process-sale:disabled, .btn-buy:disabled {
     background: #95a5a6;
     cursor: not-allowed;
 }
 
-.pos-layout {
-    display: flex;
-    flex-direction: row; /* Ensure horizontal layout */
-    align-items: stretch; /* Make children fill height */
-}
 .price-editable {
     cursor: pointer;
     text-decoration: underline dashed #007bff;
@@ -98,27 +140,25 @@
     border: 1px solid #007bff;
     border-radius: 4px;
     padding: 0.25rem;
+    font-size: 1rem;
+}
+/* Add these styles to the end of frontend/src/components/pos/Pos.css */
+
+.payout-source-selector {
+    padding: 1rem;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 1rem;
+    background-color: #f8f9fa; /* A light background to make it stand out */
 }
 
-/* Add this to Pos.css */
-.btn-print {
-    margin-left: 1rem;
-    padding: 0.25rem 0.75rem;
-    background-color: #007bff;
-    color: white;
-    text-decoration: none;
-    border-radius: 4px;
-    font-weight: 500;
-    transition: background-color 0.2s;
+.payout-source-selector h4 {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+    color: #495057;
 }
 
-.btn-print:hover {
-    background-color: #0056b3;
-}
-
-/* Also, make the success alert a flex container */
-.alert-success {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+/* We can reuse the .form-control style we already have for a consistent look */
+.payout-source-selector select.form-control {
+    width: 100%;
 }
