@@ -12,6 +12,7 @@ const pagePermissions = {
      '/expenses': ['Admin', 'Manager'],
     '/inventory': ['Admin', 'Manager', 'Buyer'],
     '/customers': ['Admin', 'Manager', 'POS Clerk', 'Salesperson'],
+    '/panel-beating': ['Admin', 'Manager', 'General Staff'],
     '/suppliers': ['Admin', 'Manager', 'Buyer'],
     '/scrapyard': ['Admin', 'Manager', 'Buyer'],
     '/logistics': ['Admin', 'Manager'],
@@ -42,8 +43,10 @@ const Sidebar = () => {
                 {canView('/expenses') && <li><Link to="/expenses">Add Expense</Link></li>} 
                 {canView('/inventory') && <li><Link to="/inventory">Inventory</Link></li>}
                 {canView('/scrapyard') && <li><Link to="/scrapyard">Bulk Sales</Link></li>}
+                {canView('/cash-management') && <li><Link to="/cash-management">Cash Management</Link></li>}
                 {canView('/customers') && <li><Link to="/customers">Customers</Link></li>}
                 {canView('/suppliers') && <li><Link to="/suppliers">Suppliers</Link></li>}
+                {canView('/panel-beating') && <li><Link to="/panel-beating">Panel Beating</Link></li>}
                 {canView('/logistics') && <li><Link to="/logistics">Logistics</Link></li>}
                 {canView('/cash-management') && <li><Link to="/cash-management">Cash Management</Link></li>}
                 {canView('/reports') && <li><Link to="/reports">Reports</Link></li>}

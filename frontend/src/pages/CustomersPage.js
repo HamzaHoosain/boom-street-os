@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate to make rows clickable
 import api from '../services/api';
 import Modal from '../components/layout/Modal';
-import '../components/inventory/Inventory.css'; // Reusing the inventory table style
+import './CustomersPage.css'; // We'll create a dedicated CSS file for this new look
 
 // --- Child Component: The Form for Adding/Editing a Customer ---
+// This component remains largely the same
 const CustomerForm = ({ onSave, customer, onClose }) => {
     const [formData, setFormData] = useState({
         name: customer?.name || '',
@@ -22,33 +24,20 @@ const CustomerForm = ({ onSave, customer, onClose }) => {
         try {
             await onSave(formData);
         } catch (err) {
-            setError("Failed to save customer. Please check the details.");
-            console.error(err);
+            setError("Failed to save customer. Please check details.");
         }
     };
 
     return (
         <form onSubmit={handleSubmit}>
             {error && <p className="alert-error">{error}</p>}
-            <div className="form-group">
-                <label>Name</label>
-                <input name="name" value={formData.name} onChange={handleChange} className="form-control" required />
-            </div>
-            <div className="form-group">
-                <label>Phone Number</label>
-                <input name="phone_number" value={formData.phone_number} onChange={handleChange} className="form-control" />
-            </div>
-            <div className="form-group">
-                <label>Email</label>
-                <input type="email" name="email" value={formData.email} onChange={handleChange} className="form-control" />
-            </div>
-            <button type="submit" className="btn-login" style={{ marginTop: '1rem' }}>
-                Save Customer
-            </button>
+            <div className="form-group"><label>Name</label><input name="name" value={formData.name} onChange={handleChange} className="form-control" required /></div>
+            <div className="form-group"><label>Phone Number</label><input name="phone_number" value={formData.phone_number} onChange={handleChange} className="form-control" /></div>
+            <div className="form-group"><label>Email</label><input type="email" name="email" value={formData.email} onChange={handleChange} className="form-control" /></div>
+            <button type="submit" className="btn-login" style={{ marginTop: '1rem' }}>Save Customer</button>
         </form>
     );
 };
-
 
 // --- Main Page Component: The Customer List and Management Logic ---
 const CustomersPage = () => {
@@ -56,11 +45,7 @@ const CustomersPage = () => {
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState(null);
-
-    // Initial data fetch
-    useEffect(() => {
-        fetchCustomers();
-    }, []);
+    const navigate = useNavigate(); // Hook for navigation
 
     const fetchCustomers = async () => {
         setLoading(true);
@@ -74,78 +59,61 @@ const CustomersPage = () => {
         }
     };
 
-    // This function is called from the form when the user saves
+    useEffect(() => {
+        fetchCustomers();
+    }, []);
+
     const handleSaveCustomer = async (customerData) => {
-        // If we are editing, call the PUT endpoint
-        if (editingCustomer) {
-            await api.put(`/customers/${editingCustomer.id}`, customerData);
-        } else {
-            // Otherwise, call the POST endpoint to create a new one
-            await api.post('/customers', customerData);
+        try {
+            if (editingCustomer) {
+                await api.put(`/customers/${editingCustomer.id}`, customerData);
+            } else {
+                await api.post('/customers', customerData);
+            }
+            fetchCustomers();
+            closeModal();
+        } catch (error) {
+            console.error("Failed to save customer", error);
+            throw error; // Re-throw to be caught by the form
         }
-        fetchCustomers(); // Re-fetch the list to show the update/new item
-        closeModal();
+    };
+    
+    // This function will take the user to the new details page
+    const handleCustomerClick = (customerId) => {
+        navigate(`/customers/${customerId}`);
     };
 
-    // Functions to control the modal
-    const openAddModal = () => {
-        setEditingCustomer(null); // Ensure we are in "add" mode
-        setShowModal(true);
-    };
-
-    const openEditModal = (customer) => {
-        setEditingCustomer(customer); // Set the customer to edit
-        setShowModal(true);
-    };
-
-    const closeModal = () => {
-        setShowModal(false);
-        setEditingCustomer(null);
-    };
+    const openAddModal = () => { setEditingCustomer(null); setShowModal(true); };
+    const closeModal = () => { setShowModal(false); setEditingCustomer(null); };
 
     if (loading) return <p>Loading customers...</p>;
 
     return (
         <div>
-            <h1>Customer Management</h1>
-            <div style={{ marginBottom: '1rem' }}>
+            <h1>Customer Accounts</h1>
+            <div style={{ marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <p>Select a customer to view their detailed purchase history and manage their account.</p>
                 <button onClick={openAddModal} className="btn-login" style={{maxWidth: '200px'}}>Add New Customer</button>
             </div>
             
             <Modal show={showModal} onClose={closeModal} title={editingCustomer ? 'Edit Customer' : 'Add New Customer'}>
-                <CustomerForm 
-                    onSave={handleSaveCustomer}
-                    customer={editingCustomer}
-                    onClose={closeModal}
-                />
+                <CustomerForm onSave={handleSaveCustomer} customer={editingCustomer} onClose={closeModal} />
             </Modal>
 
-            <table className="inventory-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Phone Number</th>
-                        <th>Email</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {customers.length > 0 ? customers.map(customer => (
-                        <tr key={customer.id}>
-                            <td>{customer.name}</td>
-                            <td>{customer.phone_number || 'N/A'}</td>
-                            <td>{customer.email || 'N/A'}</td>
-                            <td>
-                                <button onClick={() => openEditModal(customer)} className="btn-edit">Edit</button>
-                            </td>
-                        </tr>
-                    )) : (
-                        <tr>
-                            <td colSpan="4" style={{ textAlign: 'center' }}>No customers found.</td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+            <div className="customer-list">
+                {customers.map(customer => (
+                    <div key={customer.id} className="customer-card" onClick={() => handleCustomerClick(customer.id)}>
+                        <div className="customer-info">
+                            <h3>{customer.name}</h3>
+                            <span>{customer.phone_number || 'No phone number'}</span>
+                        </div>
+                        <div className={`customer-balance ${parseFloat(customer.account_balance) > 0 ? 'owing' : ''}`}>
+                            <span>Balance</span>
+                            <strong>R {parseFloat(customer.account_balance).toFixed(2)}</strong>
+                        </div>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };

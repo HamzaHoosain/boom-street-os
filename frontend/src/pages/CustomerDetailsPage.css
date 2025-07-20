@@ -1,0 +1,41 @@
+/* frontend/src/pages/CustomerDetailsPage.css */
+.back-link {
+    display: inline-block;
+    margin-bottom: 1.5rem;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+.back-link:hover {
+    text-decoration: underline;
+}
+.customer-details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+.customer-details-header h1 {
+    margin: 0;
+}
+.customer-contact {
+    text-align: right;
+    color: #6c757d;
+}
+.customer-contact p {
+    margin: 0;
+}
+.widget.action-widget {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+/* Style for "On Account" status badge */
+.status-badge.on-account {
+    background-color: #ffc107;
+    color: #212529;
+}
+.status-badge.paid {
+    background-color: #28a745;
+}

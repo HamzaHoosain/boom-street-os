@@ -1,4 +1,4 @@
-// frontend/src/pages/TransactionHistoryPage.js
+// frontend/src/pages/TransactionHistoryPage.js - FINAL ENHANCED VERSION
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
@@ -11,6 +11,7 @@ const TransactionHistoryPage = () => {
 
     useEffect(() => {
         if (!selectedBusiness) return;
+        setLoading(true);
         const businessId = selectedBusiness.business_unit_id || 'overview';
         api.get(`/transactions/${businessId}`)
             .then(res => setTransactions(res.data))
@@ -19,6 +20,33 @@ const TransactionHistoryPage = () => {
     }, [selectedBusiness]);
 
     const isOverview = !selectedBusiness.business_unit_id;
+
+    // --- NEW HELPER FUNCTION to determine the display type ---
+    const getDisplayInfo = (t) => {
+        let displayType = t.type;
+        let color = t.type.includes('INCOME') ? 'green' : 'red';
+        let tooltip = '';
+
+        if (t.type === 'INCOME' && t.payment_status === 'On Account') {
+            displayType = 'EXPECTED INCOME';
+            color = '#f0ad4e'; // A warning/orange color
+            tooltip = 'This is an Accounts Receivable entry. Cash has not been received yet.';
+        }
+        if (t.type.includes('INTERNAL')) {
+            displayType = 'INTERNAL MOVEMENT';
+            color = '#5bc0de'; // An info/blue color
+            tooltip = 'This is a non-revenue transfer between business units.';
+        }
+        if (t.type === 'TRANSFER') {
+            displayType = 'CASH TRANSFER';
+            color = '#5bc0de';
+            tooltip = 'Movement of cash between safes/tills.';
+        }
+
+        return { displayType, color, tooltip };
+    };
+
+    if (loading) return <p>Loading transaction history...</p>;
 
     return (
         <div>
@@ -34,17 +62,27 @@ const TransactionHistoryPage = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {transactions.map(t => (
-                        <tr key={t.id}>
-                            {isOverview && <td>{t.business_unit_name}</td>}
-                            <td>{new Date(t.transaction_date).toLocaleString()}</td>
-                            <td>{t.type}</td>
-                            <td>{t.description}</td>
-                            <td style={{ color: t.type.includes('INCOME') ? 'green' : 'red' }}>
-                                R {parseFloat(t.amount).toFixed(2)}
-                            </td>
-                        </tr>
-                    ))}
+                    {transactions.map(t => {
+                        const { displayType, color, tooltip } = getDisplayInfo(t);
+                        return (
+                            <tr key={t.id} title={tooltip}>
+                                {isOverview && <td>{t.business_unit_name}</td>}
+                                <td>{new Date(t.transaction_date).toLocaleString()}</td>
+                                <td>
+                                    <span 
+                                        className="status-badge" 
+                                        style={{ backgroundColor: color }}
+                                    >
+                                        {displayType}
+                                    </span>
+                                </td>
+                                <td>{t.description}</td>
+                                <td style={{ color: color }}>
+                                    R {parseFloat(t.amount).toFixed(2)}
+                                </td>
+                            </tr>
+                        );
+                    })}
                 </tbody>
             </table>
         </div>

@@ -9,8 +9,10 @@ import ExpensesPage from './pages/ExpensesPage';
 import BusinessSelectorPage from './pages/BusinessSelectorPage';
 import DashboardPage from './pages/DashboardPage';
 import PosPage from './pages/PosPage';
+import CustomerDetailsPage from './pages/CustomerDetailsPage';
 import InventoryPage from './pages/InventoryPage';
 import EditProductPage from './pages/EditProductPage';
+import PanelBeatingPage from './pages/PanelBeatingPage';
 import SuppliersPage from './pages/SuppliersPage';
 import CustomersPage from './pages/CustomersPage';
 import InvoicePage from './pages/InvoicePage';
@@ -56,6 +58,8 @@ function App() {
           <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/suppliers" element={<SuppliersPage />} />
           <Route path="/customers" element={<CustomersPage />} />
+          <Route path="/panel-beating" element={<PanelBeatingPage />} />
+          <Route path="/customers/:id" element={<CustomerDetailsPage />} />
           <Route path="/transactions" element={<TransactionHistoryPage />} />
           <Route path="/cash-management" element={<CashManagementPage />} />
           {/* Add all other protected routes here */}

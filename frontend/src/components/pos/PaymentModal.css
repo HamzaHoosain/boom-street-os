@@ -69,3 +69,5 @@
 .btn-close-modal:hover {
     background-color: #f1f3f5;
 }
+
+.btn-payment.account { background-color: #ffc107; color: #212529; }

@@ -162,3 +162,40 @@
 .payout-source-selector select.form-control {
     width: 100%;
 }
+.mode-selector {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+.mode-selector button {
+    padding: 0.5rem 1rem;
+    border: 1px solid #ccc;
+    background-color: #f8f9fa;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: 500;
+}
+.mode-selector button.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+.expense-form-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.btn-log-expense {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1.1rem;
+    background-color: #ffc107;
+    color: #212529;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 1rem;
+}

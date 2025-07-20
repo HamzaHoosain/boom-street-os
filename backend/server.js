@@ -21,6 +21,7 @@ app.use('/api/reporting', require('./routes/reporting'));
 app.use('/api/sales', require('./routes/sales'));
 app.use('/api/scrapyard', require('./routes/scrapyard'));
 app.use('/api/suppliers', require('./routes/suppliers'));
+app.use('/api/business-units', require('./routes/businessUnits'));
 app.use('/api/terminals', require('./routes/terminals'));
 app.use('/api/transactions', require('./routes/transactions'));
 app.use('/api/transfers', require('./routes/transfers'));
