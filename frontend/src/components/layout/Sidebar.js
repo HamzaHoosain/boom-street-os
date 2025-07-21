@@ -40,7 +40,6 @@ const Sidebar = () => {
                 {/* --- 2. UPDATE THE LINKS --- */}
                 {canView('/pos') && <li><Link to="/pos">Point of Sale</Link></li>}
                 {canView('/transactions') && <li><Link to="/transactions">Transaction History</Link></li>}
-                {canView('/expenses') && <li><Link to="/expenses">Add Expense</Link></li>} 
                 {canView('/inventory') && <li><Link to="/inventory">Inventory</Link></li>}
                 {canView('/scrapyard') && <li><Link to="/scrapyard">Bulk Sales</Link></li>}
                 {canView('/cash-management') && <li><Link to="/cash-management">Cash Management</Link></li>}
@@ -48,7 +47,6 @@ const Sidebar = () => {
                 {canView('/suppliers') && <li><Link to="/suppliers">Suppliers</Link></li>}
                 {canView('/panel-beating') && <li><Link to="/panel-beating">Panel Beating</Link></li>}
                 {canView('/logistics') && <li><Link to="/logistics">Logistics</Link></li>}
-                {canView('/cash-management') && <li><Link to="/cash-management">Cash Management</Link></li>}
                 {canView('/reports') && <li><Link to="/reports">Reports</Link></li>}
             </ul>
         </div>

@@ -89,7 +89,7 @@ router.get('/:id', authMiddleware, async (req, res) => {
 router.get('/:id/history', authMiddleware, async (req, res) => {
     try {
         const history = await db.query(
-            'SELECT id, sale_date, total_amount, payment_status FROM sales WHERE customer_id = $1 ORDER BY sale_date DESC',
+            'SELECT id, sale_date, total_amount, payment_status, amount_paid FROM sales WHERE customer_id = $1 ORDER BY sale_date DESC',
             [req.params.id]
         );
         res.json(history.rows);
@@ -99,33 +99,82 @@ router.get('/:id/history', authMiddleware, async (req, res) => {
     }
 });
 
+// --- NEW ROUTE to get only UNPAID invoices for a customer ---
+// @route   GET api/customers/:id/unpaid
+// @desc    Get a list of unpaid or partially paid invoices for a customer
+// @access  Private
+router.get('/:id/unpaid', authMiddleware, async (req, res) => {
+    try {
+        const unpaidSales = await db.query(
+            `SELECT id, sale_date, total_amount, amount_paid 
+             FROM sales 
+             WHERE customer_id = $1 AND (payment_status = 'On Account' OR payment_status = 'Partially Paid')
+             ORDER BY sale_date ASC`, // Oldest invoices first
+            [req.params.id]
+        );
+        res.json(unpaidSales.rows);
+    } catch (err) {
+        console.error("GET CUSTOMER UNPAID ERROR:", err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// --- OVERHAULED ROUTE to process a detailed payment allocation ---
 // @route   POST api/customers/:id/payment
-// @desc    Record a new payment against a customer's outstanding account balance
+// @desc    Record a new payment and apply it to specific invoices
 // @access  Private
 router.post('/:id/payment', authMiddleware, async (req, res) => {
     const { id: customerId } = req.params;
-    const { amount, safe_id, notes, business_unit_id } = req.body;
+    const { total_amount, safe_id, notes, business_unit_id, allocations } = req.body;
     const user_id = req.user.id;
     const client = await db.pool.connect();
 
     try {
         await client.query('BEGIN');
 
-        // 1. Decrease the customer's account balance
-        const updatedCustomer = await client.query(
-            'UPDATE customers SET account_balance = account_balance - $1 WHERE id = $2 RETURNING *',
-            [amount, customerId]
+        // 1. Create a single "parent" payment record
+        const paymentQuery = `
+            INSERT INTO customer_payments (customer_id, total_amount, safe_id, user_id, notes) 
+            VALUES ($1, $2, $3, $4, $5) RETURNING id`;
+        const paymentResult = await client.query(paymentQuery, [customerId, total_amount, safe_id, user_id, notes]);
+        const newPaymentId = paymentResult.rows[0].id;
+
+        // 2. Loop through each allocation and apply it
+        for (const alloc of allocations) {
+            const { sale_id, amount_applied } = alloc;
+            await client.query('UPDATE sales SET amount_paid = amount_paid + $1 WHERE id = $2', [amount_applied, sale_id]);
+            await client.query('INSERT INTO sale_payment_allocations (sale_id, payment_id, amount_applied) VALUES ($1, $2, $3)', [sale_id, newPaymentId, amount_applied]);
+        }
+
+        // 3. Recalculate and update the customer's total account balance
+        const balanceResult = await client.query(
+            `SELECT COALESCE(SUM(total_amount - amount_paid), 0) as new_balance
+             FROM sales 
+             WHERE customer_id = $1 AND payment_status IN ('On Account', 'Partially Paid')`,
+            [customerId]
         );
+        const newBalance = balanceResult.rows[0].new_balance;
+        const updatedCustomer = await client.query('UPDATE customers SET account_balance = $1 WHERE id = $2 RETURNING *', [newBalance, customerId]);
 
-        // 2. Increase the balance of the cash safe where the payment was received
-        await client.query("UPDATE cash_safes SET current_balance = current_balance + $1 WHERE id = $2", [amount, safe_id]);
-
-        // 3. Log this payment in the cash ledger
+        // 4. Update the cash safe and cash ledger
+        await client.query("UPDATE cash_safes SET current_balance = current_balance + $1 WHERE id = $2", [total_amount, safe_id]);
         const description = `Account payment from ${updatedCustomer.rows[0].name}. Notes: ${notes}`;
-        await client.query("INSERT INTO cash_ledger (safe_id, type, amount, description, user_id) VALUES ($1, 'ACCOUNT_PAYMENT', $2, $3, $4)", [safe_id, amount, description, user_id]);
+        await client.query("INSERT INTO cash_ledger (safe_id, type, amount, description, user_id, payment_id) VALUES ($1, 'ACCOUNT_PAYMENT', $2, $3, $4, $5)", [safe_id, total_amount, description, user_id, newPaymentId]);
 
-        // 4. Log this as a special "INCOME" transaction in the master financial ledger
-        await client.query("INSERT INTO transactions (business_unit_id, amount, type, description, source_reference) VALUES ($1, $2, 'INCOME', $3, $4)", [business_unit_id, amount, description, `customer_payment:${customerId}`]);
+        // 5. Update the master transaction ledger
+        await client.query("INSERT INTO transactions (business_unit_id, amount, type, description, source_reference) VALUES ($1, $2, 'INCOME', $3, $4)", [business_unit_id, total_amount, description, `customer_payment:${customerId}`]);
+
+        // 6. Loop back through the affected invoices to update their final status
+        for (const alloc of allocations) {
+            const sale_id = alloc.sale_id;
+            const saleRes = await client.query('SELECT total_amount, amount_paid FROM sales WHERE id = $1', [sale_id]);
+            const sale = saleRes.rows[0];
+            if (parseFloat(sale.amount_paid) >= parseFloat(sale.total_amount)) {
+                await client.query("UPDATE sales SET payment_status = 'Paid' WHERE id = $1", [sale_id]);
+            } else {
+                await client.query("UPDATE sales SET payment_status = 'Partially Paid' WHERE id = $1", [sale_id]);
+            }
+        }
 
         await client.query('COMMIT');
         res.json(updatedCustomer.rows[0]);

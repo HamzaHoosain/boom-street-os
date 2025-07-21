@@ -5,7 +5,6 @@ import { AuthContext } from './context/AuthContext';
 
 import Layout from './components/layout/Layout';
 import LoginPage from './pages/LoginPage';
-import ExpensesPage from './pages/ExpensesPage';
 import BusinessSelectorPage from './pages/BusinessSelectorPage';
 import DashboardPage from './pages/DashboardPage';
 import PosPage from './pages/PosPage';
@@ -16,6 +15,7 @@ import PanelBeatingPage from './pages/PanelBeatingPage';
 import SuppliersPage from './pages/SuppliersPage';
 import CustomersPage from './pages/CustomersPage';
 import InvoicePage from './pages/InvoicePage';
+import ReportsPage from './pages/ReportsPage';
 import TransactionHistoryPage from './pages/TransactionHistoryPage'; // The new unified page
 import CashManagementPage from './pages/CashManagementPage';
 
@@ -55,13 +55,13 @@ function App() {
           <Route path="/pos" element={<PosPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/inventory/edit/:productId" element={<EditProductPage />} />
-          <Route path="/expenses" element={<ExpensesPage />} />
           <Route path="/suppliers" element={<SuppliersPage />} />
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/panel-beating" element={<PanelBeatingPage />} />
           <Route path="/customers/:id" element={<CustomerDetailsPage />} />
           <Route path="/transactions" element={<TransactionHistoryPage />} />
           <Route path="/cash-management" element={<CashManagementPage />} />
+          <Route path="/reports" element={<ReportsPage />} />
           {/* Add all other protected routes here */}
         </Route>
         

@@ -1,37 +1,84 @@
-/* frontend/src/pages/ReportsPage.css */
 .report-controls {
     display: flex;
+    flex-wrap: wrap; /* Allow items to wrap on smaller screens */
     gap: 1rem;
     align-items: flex-end;
     background: #fff;
-    padding: 1rem;
+    padding: 1.5rem;
     border-radius: 8px;
     margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-.report-container {
-    background: #fff;
-    padding: 1.5rem;
-    border-radius: 8px;
-    margin-top: 1rem;
+
+.report-controls .form-group {
+    margin-bottom: 0;
 }
-.report-summary {
+
+.report-controls button {
+    height: 40px; /* Align button height with input fields */
+}
+
+.report-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    text-align: center;
+    grid-template-columns: 1fr;
+    gap: 0.75rem; /* Tighter spacing for a statement look */
+    margin-top: 2rem;
+    max-width: 800px;
 }
-.summary-item {
-    padding: 1.5rem;
+
+.report-card {
+    background: #fff;
+    padding: 1.25rem 1.5rem;
     border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    border-left: 5px solid #ccc;
+    transition: background-color 0.2s;
 }
-.summary-item span {
-    display: block;
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
+
+/* --- Financial Statement Styling --- */
+
+/* Standard line items */
+.report-card.primary { 
+    border-left-color: #007bff; 
 }
-.summary-item strong {
-    font-size: 2rem;
+.report-card.secondary { 
+    border-left-color: #6c757d; 
+    margin-left: 2rem; /* Indent for subtractions */
+    max-width: calc(100% - 2rem);
 }
-.summary-item.income { background-color: #d4edda; color: #155724; }
-.summary-item.expense { background-color: #f8d7da; color: #721c24; }
-.summary-item.profit { background-color: #cce5ff; color: #004085; }
+
+/* Profit and special items */
+.report-card.profit { 
+    border-left-color: #28a745; 
+    background-color: #f8f9fa;
+}
+.report-card.profit.final { 
+    border-top: 2px solid #28a745; 
+    margin-top: 0.5rem;
+    padding-top: 1.25rem;
+}
+.report-card.tax { 
+    border-left-color: #dc3545; 
+    margin-left: 2rem;
+    max-width: calc(100% - 2rem);
+}
+.report-card.receivable { 
+    border-left-color: #ffc107; 
+    margin-top: 1.5rem; 
+    border-top: 1px solid #eee;
+}
+
+/* Text styling inside the cards */
+.report-card span {
+    font-size: 1.1rem;
+    color: #495057;
+}
+
+.report-card strong {
+    font-size: 1.75rem;
+    font-weight: 600;
+    font-family: 'Courier New', Courier, monospace; /* Monospaced font for numbers */
+}

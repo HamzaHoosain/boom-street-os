@@ -39,3 +39,27 @@
 .status-badge.paid {
     background-color: #28a745;
 }
+/* Add these styles to the end of CustomerDetailsPage.css */
+.invoice-allocation-list {
+    max-height: 250px;
+    overflow-y: auto;
+    border: 1px solid #eee;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+}
+.invoice-allocation-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+.invoice-allocation-item span {
+    font-weight: 500;
+}
+.invoice-allocation-item input {
+    width: 100px;
+}
+.status-badge.partially-paid {
+    background-color: #17a2b8; /* Info/Teal color */
+}
