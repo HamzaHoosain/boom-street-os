@@ -11,7 +11,10 @@ import PosPage from './pages/PosPage';
 import CustomerDetailsPage from './pages/CustomerDetailsPage';
 import InventoryPage from './pages/InventoryPage';
 import EditProductPage from './pages/EditProductPage';
+import EmployeesPage from './pages/EmployeesPage';
 import PanelBeatingPage from './pages/PanelBeatingPage';
+import ScrapyardPage from './pages/ScrapyardPage';
+import BulkBuyersPage from './pages/BulkBuyersPage';
 import SuppliersPage from './pages/SuppliersPage';
 import CustomersPage from './pages/CustomersPage';
 import InvoicePage from './pages/InvoicePage';
@@ -55,8 +58,11 @@ function App() {
           <Route path="/pos" element={<PosPage />} />
           <Route path="/inventory" element={<InventoryPage />} />
           <Route path="/inventory/edit/:productId" element={<EditProductPage />} />
+          <Route path="/scrapyard" element={<ScrapyardPage />} />
+          <Route path="/employees" element={<EmployeesPage />} />
           <Route path="/suppliers" element={<SuppliersPage />} />
           <Route path="/customers" element={<CustomersPage />} />
+          <Route path="/bulk-buyers" element={<BulkBuyersPage />} />
           <Route path="/panel-beating" element={<PanelBeatingPage />} />
           <Route path="/customers/:id" element={<CustomerDetailsPage />} />
           <Route path="/transactions" element={<TransactionHistoryPage />} />

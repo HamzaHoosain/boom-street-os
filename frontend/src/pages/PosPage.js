@@ -10,6 +10,7 @@ import CustomerSearchModal from '../components/pos/CustomerSearchModal';
 import Modal from '../components/layout/Modal';
 import PaymentModal from '../components/pos/PaymentModal';
 import ChargeToAccountModal from '../components/pos/ChargeToAccountModal';
+import SearchBar from '../components/common/SearchBar';
 import '../components/pos/Pos.css';
 
 // --- Re-usable Form for the Expense Mode ---
@@ -66,6 +67,7 @@ const PosPage = () => {
     const [safes, setSafes] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
     const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const [cartItems, setCartItems] = useState([]);
     const [payoutSafeId, setPayoutSafeId] = useState('');
     const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -90,14 +92,13 @@ const PosPage = () => {
         if (selectedBusiness?.business_unit_id) {
             setError(''); setSuccess(''); setCartItems([]); setProducts([]);
             setFilteredProducts([]); setCategories([]); setLastSaleId(null);
-            setSelectedCustomer(null); setPayoutSafeId('');
+            setSelectedCustomer(null); setPayoutSafeId(''); setSearchTerm('');
 
             const fetchData = async () => {
                 try {
                     const productsRes = await api.get(`/products/${selectedBusiness.business_unit_id}`);
                     setProducts(productsRes.data);
-                    setFilteredProducts(productsRes.data);
-
+                    
                     if (defaultMode === 'sell') {
                         const categoriesRes = await api.get(`/categories/${selectedBusiness.business_unit_id}`);
                         setCategories(categoriesRes.data);
@@ -116,13 +117,23 @@ const PosPage = () => {
         }
     }, [selectedBusiness]);
     
+    // Master filtering effect for both category and search
     useEffect(() => {
-        if (selectedCategoryId === null) {
-            setFilteredProducts(products);
-        } else {
-            setFilteredProducts(products.filter(p => p.category_id === selectedCategoryId));
+        let tempProducts = [...products];
+
+        if (selectedCategoryId) {
+            tempProducts = tempProducts.filter(p => p.category_id === selectedCategoryId);
         }
-    }, [selectedCategoryId, products]);
+
+        if (searchTerm) {
+            const lowercasedTerm = searchTerm.toLowerCase();
+            tempProducts = tempProducts.filter(p =>
+                p.name.toLowerCase().includes(lowercasedTerm) ||
+                (p.sku && p.sku.toLowerCase().includes(lowercasedTerm))
+            );
+        }
+        setFilteredProducts(tempProducts);
+    }, [searchTerm, selectedCategoryId, products]);
 
     const handleAddToCart = (product) => {
         setSuccess(''); setLastSaleId(null);
@@ -248,28 +259,15 @@ const PosPage = () => {
         return total + price * item.quantity;
     }, 0);
 
-       if (!selectedBusiness || !selectedBusiness.business_unit_id) {
-        return ( <div><h1>Terminal</h1><p>Please select a specific business unit from the header to use this feature.</p></div> );
+    if (!selectedBusiness || !selectedBusiness.business_unit_id) {
+        return ( <div><h1>Terminal</h1><p>Please select a specific business unit from the header.</p></div> );
     }
 
     return (
         <div>
             <h1>{selectedBusiness.business_unit_name} Terminal</h1>
             <div className="mode-selector">
-                {availableModes.map(m => (
-                    <button 
-                        key={m} 
-                        onClick={() => {
-                            setCartItems([]);
-                            setSuccess('');
-                            setError('');
-                            setMode(m);
-                        }}
-                        className={mode === m ? 'active' : ''}
-                    >
-                        {m.charAt(0).toUpperCase() + m.slice(1)}
-                    </button>
-                ))}
+                {availableModes.map(m => <button key={m} onClick={() => {setCartItems([]); setSuccess(''); setError(''); setMode(m);}} className={mode === m ? 'active' : ''}>{m.charAt(0).toUpperCase() + m.slice(1)}</button>)}
             </div>
 
             {error && <p className="alert-error" style={{marginTop: '1rem'}}>{error}</p>}
@@ -277,9 +275,7 @@ const PosPage = () => {
                 <div className="alert-success">
                     <span>{success}</span>
                     {lastSaleId && mode === 'sell' && (
-                        <a href={`/invoice/${lastSaleId}`} target="_blank" rel="noopener noreferrer" className="btn-print">
-                            Print Invoice
-                        </a>
+                        <a href={`/invoice/${lastSaleId}`} target="_blank" rel="noopener noreferrer" className="btn-print">Print Invoice</a>
                     )}
                 </div>
             )}
@@ -288,24 +284,19 @@ const PosPage = () => {
                 <ExpenseForm onLogExpense={handleLogExpense} />
             ) : (
                 <div className="pos-layout">
-                    {categories.length > 0 && 
-                        <CategorySidebar 
-                            categories={categories} 
-                            selectedCategoryId={selectedCategoryId} 
-                            onSelectCategory={setSelectedCategoryId} 
-                        />
-                    }
+                    {categories.length > 0 && <CategorySidebar categories={categories} selectedCategoryId={selectedCategoryId} onSelectCategory={setSelectedCategoryId} />}
                     <div className="product-list-container">
+                        
+                        <SearchBar 
+                            searchTerm={searchTerm}
+                            setSearchTerm={setSearchTerm}
+                            placeholder="Search products by name or SKU..."
+                        />
+
                         <ProductList products={filteredProducts} onAddToCart={handleAddToCart} isBuyMode={mode === 'buy'} />
                     </div>
                     <div className="cart-container">
-                        {mode === 'sell' && 
-                            <CustomerSelect 
-                                selectedCustomer={selectedCustomer} 
-                                onSelectCustomer={() => setShowCustomerModal(true)} 
-                                onClearCustomer={() => setSelectedCustomer(null)} 
-                            />
-                        }
+                        {mode === 'sell' && <CustomerSelect selectedCustomer={selectedCustomer} onSelectCustomer={() => setShowCustomerModal(true)} onClearCustomer={() => setSelectedCustomer(null)} />}
                         {mode === 'buy' && (
                             <div className="payout-source-selector">
                                 <h4>Payout Source</h4>
@@ -326,22 +317,19 @@ const PosPage = () => {
                 </div>
             )}
             
-            {/* --- Modals --- */}
             <Modal show={showCustomerModal} onClose={() => setShowCustomerModal(false)} title="Select a Customer">
                 <CustomerSearchModal onSelect={setSelectedCustomer} onClose={() => setShowCustomerModal(false)} />
             </Modal>
             
-            {/* --- THIS IS THE FIX --- */}
             <Modal show={showPaymentModal} onClose={() => setShowPaymentModal(false)} title="Payment">
                 <PaymentModal 
                     totalAmount={cartTotal}
                     onProcessPayment={handleProcessSale}
-                    onProcessAccountCharge={handleProcessAccountCharge}
+                    onProcessAccountCharge={() => setShowAccountChargeModal(true)}
                     onClose={() => setShowPaymentModal(false)}
-                    selectedCustomer={selectedCustomer} // Pass the selected customer as a prop
+                    selectedCustomer={selectedCustomer}
                 />
             </Modal>
-            {/* --- END OF FIX --- */}
             
             <Modal show={showAccountChargeModal} onClose={() => setShowAccountChargeModal(false)} title="Charge to Business Account">
                 <ChargeToAccountModal
