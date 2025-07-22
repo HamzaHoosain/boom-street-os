@@ -199,3 +199,21 @@
     cursor: pointer;
     margin-top: 1rem;
 }
+
+.cart-items li {
+    gap: 0.75rem; /* Adds nice spacing between items in the row */
+}
+.cart-item-name {
+    flex-grow: 1; /* Allows the name to take up available space */
+}
+.quantity-input {
+    width: 70px;
+    text-align: right;
+    padding: 0.25rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.cart-item-quantity {
+    font-style: italic;
+    color: #6c757d;
+}

@@ -19,6 +19,56 @@ router.post('/employees', authMiddleware, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+// Add this new route to backend/routes/payroll.js
+
+// @route   GET api/payroll/employees/:id/ledger
+// @desc    Get a financial ledger for a single employee
+// @access  Private (Admin/Manager)
+
+router.get('/employees/:id/ledger', authMiddleware, async (req, res) => {
+    const { id: employeeId } = req.params;
+    try {
+        // This query finds all loans and all payslips for a given employee
+        const query = `
+            SELECT 'Loan Issued' as type, loan_date as date, principal_amount as amount, notes FROM staff_loans WHERE employee_id = $1
+            UNION ALL
+            SELECT 'Payroll' as type, pr.run_date as date, p.net_pay as amount, 'Net pay for ' || pr.pay_period_start || ' to ' || pr.pay_period_end as notes
+            FROM payslips p
+            JOIN payroll_runs pr ON p.payroll_run_id = pr.id
+            WHERE p.employee_id = $1
+            ORDER BY date DESC
+        `;
+        const ledger = await db.query(query, [employeeId]);
+        res.json(ledger.rows);
+    } catch (err) {
+        console.error("Get Employee Ledger Error:", err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   GET api/payroll/employees/:id
+// @desc    Get details for a single employee
+// @access  Private
+router.get('/employees/:id', authMiddleware, async (req, res) => {
+    const { id } = req.params;
+    try {
+        const query = `
+            SELECT e.id, e.user_id, u.first_name, u.last_name, bu.name as business_unit_name 
+            FROM employees e
+            JOIN users u ON e.user_id = u.id
+            JOIN business_units bu ON e.business_unit_id = bu.id
+            WHERE e.id = $1
+        `;
+        const result = await db.query(query, [id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ msg: 'Employee not found' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error("Get Single Employee Error:", err.message);
+        res.status(500).send('Server Error');
+    }
+});
 
 // @route   GET api/payroll/employees
 // @desc    Get a list of all employees with their new pay details
@@ -150,6 +200,60 @@ router.post('/run', authMiddleware, async (req, res) => {
         res.status(500).send('Server error during payroll run');
     } finally {
         client.release();
+    }
+});
+// Add these new routes to backend/routes/payroll.js
+
+// @route   GET api/payroll/available-users
+// @desc    Get a list of users who are NOT yet employees
+// @access  Private
+router.get('/available-users', authMiddleware, async (req, res) => {
+    try {
+        const query = `
+            SELECT u.id, u.first_name, u.last_name FROM users u
+            LEFT JOIN employees e ON u.id = e.user_id
+            WHERE e.id IS NULL
+            ORDER BY u.first_name
+        `;
+        const users = await db.query(query);
+        res.json(users.rows);
+    } catch (err) {
+        console.error("Get Available Users Error:", err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   GET api/payroll/employees/:id/details
+// @desc    Get the editable details for a single employee
+// @access  Private
+router.get('/employees/:id/details', authMiddleware, async (req, res) => {
+    try {
+        const result = await db.query('SELECT * FROM employees WHERE id = $1', [req.params.id]);
+        if (result.rows.length === 0) {
+            return res.status(404).json({ msg: 'Employee profile not found' });
+        }
+        res.json(result.rows[0]);
+    } catch (err) {
+        console.error("Get Employee Details Error:", err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
+// @route   PUT api/payroll/employees/:id
+// @desc    Update an employee's pay details
+// @access  Private
+router.put('/employees/:id', authMiddleware, async (req, res) => {
+    const { id } = req.params;
+    const { business_unit_id, hourly_rate, default_hours_per_period } = req.body;
+    try {
+        const updatedEmployee = await db.query(
+            "UPDATE employees SET business_unit_id = $1, hourly_rate = $2, default_hours_per_period = $3 WHERE id = $4 RETURNING *",
+            [business_unit_id, hourly_rate, default_hours_per_period, id]
+        );
+        res.json(updatedEmployee.rows[0]);
+    } catch (err) {
+        console.error("Update Employee Error:", err.message);
+        res.status(500).send('Server Error');
     }
 });
 

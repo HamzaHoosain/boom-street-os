@@ -32,7 +32,7 @@ const ScrapyardPage = () => {
             setMaterials(materialsRes.data);
             setBuyers(buyersRes.data);
             // Filter for non-physical safes, which represent bank accounts
-            setSafes(safesRes.data.filter(s => !s.is_physical_cash));
+            setSafes(safesRes.data);
 
         } catch (err) {
             setError('Failed to load initial data for the terminal.');

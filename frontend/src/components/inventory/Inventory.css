@@ -50,3 +50,9 @@
 .status-badge.in-progress { background-color: #007bff; }
 .status-badge.completed { background-color: #28a745; }
 .status-badge.awaiting-parts { background-color: #ffc107; color: #333; }
+
+/* Add this to the end of Inventory.css */
+.clickable-row:hover {
+    cursor: pointer;
+    background-color: #e9ecef; /* A light grey to indicate hover */
+}

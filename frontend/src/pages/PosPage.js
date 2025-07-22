@@ -104,10 +104,11 @@ const PosPage = () => {
                         setCategories(categoriesRes.data);
                     } else if (defaultMode === 'buy') {
                         const safesRes = await api.get('/cash/safes');
-                        const physicalSafes = safesRes.data.filter(s => s.is_physical_cash);
-                        setSafes(physicalSafes);
-                        const scrapyardFloat = physicalSafes.find(s => s.name === 'Scrapyard Float');
-                        if (scrapyardFloat) setPayoutSafeId(scrapyardFloat.id);
+                        setSafes(safesRes.data);
+                        const scrapyardFloat = safesRes.data.find(s => s.name === 'Scrapyard Float');
+    if (scrapyardFloat) {
+        setPayoutSafeId(scrapyardFloat.id);
+    }
                     }
                 } catch (err) {
                     setError('Failed to fetch initial data for this terminal mode.');
@@ -138,13 +139,9 @@ const PosPage = () => {
     const handleAddToCart = (product) => {
         setSuccess(''); setLastSaleId(null);
         if (mode === 'buy') {
-            const weightStr = prompt(`Enter weight for ${product.name} (kg):`);
-            const weight = parseFloat(weightStr);
-            if (weight && !isNaN(weight) && weight > 0) {
-                setCartItems(prev => [...prev, { ...product, quantity: weight, cartId: Date.now() }]);
-            }
-            return;
-        }
+            setCartItems(prev => [...prev, { ...product, quantity: 1, cartId: Date.now() }]);
+    return;
+}
         setCartItems(prev => {
             const exists = prev.find(item => item.id === product.id);
             if (exists) {
@@ -162,6 +159,14 @@ const PosPage = () => {
         setCartItems(prev => prev.map(item => 
             item.cartId === cartId ? { ...item, selling_price: newPrice } : item
         ));
+        
+};
+const handleQuantityChange = (cartId, newQuantity) => {
+    // Convert the input to a number, defaulting to 0 if it's not a valid number
+    const quantity = parseFloat(newQuantity);
+    setCartItems(prev => prev.map(item =>
+        item.cartId === cartId ? { ...item, quantity: isNaN(quantity) ? 0 : quantity } : item
+    ));
     };
 
     const handleProcess = () => {
@@ -310,6 +315,7 @@ const PosPage = () => {
                             cartItems={cartItems}
                             onRemoveFromCart={handleRemoveFromCart}
                             onProcessSale={handleProcess}
+                             onQuantityChange={handleQuantityChange}
                             onUpdatePrice={handleUpdatePrice}
                             isBuyMode={mode === 'buy'}
                         />

@@ -27,7 +27,6 @@ const PaymentModal = ({ totalAmount, onProcessPayment, onProcessAccountCharge, o
     }, []);
 
     const handlePayment = (paymentData) => {
-        // This function simply passes the constructed payment object upwards
         onProcessPayment(paymentData);
     };
     
@@ -39,7 +38,9 @@ const PaymentModal = ({ totalAmount, onProcessPayment, onProcessAccountCharge, o
 
     const canChargeToCustomerAccount = selectedCustomer && selectedCustomer.id;
 
-    if (loading) return <p>Loading payment options...</p>;
+    if (loading) {
+        return <p>Loading payment options...</p>;
+    }
 
     return (
         <div className="payment-modal">
@@ -52,7 +53,6 @@ const PaymentModal = ({ totalAmount, onProcessPayment, onProcessAccountCharge, o
 
                 <button 
                     className="btn-payment account" 
-                    // CRITICAL FIX: This now sends ONLY the method, ensuring no safe_id is included
                     onClick={() => handlePayment({ method: 'ON_ACCOUNT' })}
                     disabled={!canChargeToCustomerAccount}
                     title={!canChargeToCustomerAccount ? "Assign a customer to the sale first" : "Charge this sale to the selected customer's account"}

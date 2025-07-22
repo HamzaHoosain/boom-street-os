@@ -17,6 +17,7 @@ import ScrapyardPage from './pages/ScrapyardPage';
 import BulkBuyersPage from './pages/BulkBuyersPage';
 import SuppliersPage from './pages/SuppliersPage';
 import CustomersPage from './pages/CustomersPage';
+import EmployeeDetailsPage from './pages/EmployeeDetailsPage';
 import InvoicePage from './pages/InvoicePage';
 import ReportsPage from './pages/ReportsPage';
 import TransactionHistoryPage from './pages/TransactionHistoryPage'; // The new unified page
@@ -60,6 +61,7 @@ function App() {
           <Route path="/inventory/edit/:productId" element={<EditProductPage />} />
           <Route path="/scrapyard" element={<ScrapyardPage />} />
           <Route path="/employees" element={<EmployeesPage />} />
+          <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
           <Route path="/suppliers" element={<SuppliersPage />} />
           <Route path="/customers" element={<CustomersPage />} />
           <Route path="/bulk-buyers" element={<BulkBuyersPage />} />

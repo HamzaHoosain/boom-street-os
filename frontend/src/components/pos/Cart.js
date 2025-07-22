@@ -1,8 +1,7 @@
 import React, { useContext, useState } from 'react';
 import { useAuth } from '../../context/useAuth';
 
-const Cart = ({ cartItems, onRemoveFromCart, onProcessSale, onUpdatePrice, isBuyMode }) => {
-    const { currentRole } = useAuth();
+const Cart = ({ cartItems, onRemoveFromCart, onProcessSale, onUpdatePrice, onQuantityChange, isBuyMode }) => {    const { currentRole } = useAuth();
     const [editingItemCartId, setEditingItemCartId] = useState(null);
     const [newPrice, setNewPrice] = useState('');
 
@@ -53,29 +52,28 @@ const Cart = ({ cartItems, onRemoveFromCart, onProcessSale, onUpdatePrice, isBuy
             <ul className="cart-items">
                 {cartItems.map((item) => (
                     <li key={item.cartId}>
-                        <span>{item.name} (x {item.quantity}{isBuyMode ? 'kg' : ''})</span>
-                        
-                        {!isBuyMode && editingItemCartId === item.cartId ? (
-                            <input
-                                type="number"
-                                value={newPrice}
-                                onChange={handlePriceChange}
-                                onBlur={() => handlePriceUpdate(item)}
-                                onKeyPress={(e) => handleKeyPress(e, item)}
-                                autoFocus
-                                className="price-input"
-                            />
-                        ) : (
-                            <span 
-                                className={canOverridePrice ? 'price-editable' : ''}
-                                onClick={() => handlePriceClick(item)}
-                            >
-                                R {getItemTotal(item)}
-                            </span>
-                        )}
-                        
-                        <button onClick={() => onRemoveFromCart(item)}>×</button>
-                    </li>
+    <span className="cart-item-name">{item.name}</span>
+    
+    {/* --- THIS IS THE NEW LOGIC --- */}
+    {isBuyMode ? (
+        <input
+            type="number"
+            value={item.quantity}
+            onChange={(e) => onQuantityChange(item.cartId, e.target.value)}
+            className="quantity-input"
+            autoFocus
+        />
+    ) : (
+        <span className="cart-item-quantity">(x {item.quantity})</span>
+    )}
+    {/* --- END OF NEW LOGIC --- */}
+    
+    <span className={canOverridePrice ? 'price-editable' : ''} onClick={() => handlePriceClick(item)}>
+        R {getItemTotal(item)}
+    </span>
+    
+    <button onClick={() => onRemoveFromCart(item)}>×</button>
+</li>
                 ))}
             </ul>
             <div className="cart-total">
