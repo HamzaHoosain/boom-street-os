@@ -18,6 +18,7 @@ const pagePermissions = {
     '/scrapyard': ['Admin', 'Manager', 'Buyer'],
     '/logistics': ['Admin', 'Manager'],
     '/cash-management': ['Admin', 'Manager'],
+    '/payroll': ['Admin', 'Manager'],
     '/reports': ['Admin', 'Manager']
 };
 
@@ -49,7 +50,7 @@ const Sidebar = () => {
     {canView('/bulk-buyers') && <li><Link to="/bulk-buyers">Bulk Buyers</Link></li>}
     {canView('/suppliers') && <li><Link to="/suppliers">Product Suppliers</Link></li>}
     {canView('/employees') && <li><Link to="/employees">Employees</Link></li>}
-    
+    { canView('/payroll') && <li><Link to="/payroll">Payroll</Link></li>}
     {canView('/logistics') && <li><Link to="/logistics">Logistics</Link></li>}
     {canView('/cash-management') && <li><Link to="/cash-management">Cash Management</Link></li>}
     {canView('/reports') && <li><Link to="/reports">Reports</Link></li>}

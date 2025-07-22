@@ -10,6 +10,7 @@ import DashboardPage from './pages/DashboardPage';
 import PosPage from './pages/PosPage';
 import CustomerDetailsPage from './pages/CustomerDetailsPage';
 import InventoryPage from './pages/InventoryPage';
+import PayrollPage from './pages/PayrollPage';
 import EditProductPage from './pages/EditProductPage';
 import EmployeesPage from './pages/EmployeesPage';
 import PanelBeatingPage from './pages/PanelBeatingPage';
@@ -61,6 +62,7 @@ function App() {
           <Route path="/inventory/edit/:productId" element={<EditProductPage />} />
           <Route path="/scrapyard" element={<ScrapyardPage />} />
           <Route path="/employees" element={<EmployeesPage />} />
+          <Route path="/payroll" element={<PayrollPage />} />
           <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
           <Route path="/suppliers" element={<SuppliersPage />} />
           <Route path="/customers" element={<CustomersPage />} />
