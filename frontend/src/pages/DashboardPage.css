@@ -1,4 +1,3 @@
-/* frontend/src/pages/DashboardPage.css */
 .widget-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -7,23 +6,26 @@
 }
 
 .widget {
-    background-color: #fff;
+    background-color: var(--background-secondary);
     padding: 1.5rem;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    border: 1px solid var(--border-color);
     text-align: center;
 }
 
 .widget h3 {
     margin-top: 0;
-    font-size: 1rem;
-    color: #555;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
     text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .widget-value {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #007bff;
+    color: var(--accent-primary);
     margin-bottom: 0;
 }
+.widget.income .widget-value { color: var(--color-success); }
+.widget.expense .widget-value { color: var(--color-error); }

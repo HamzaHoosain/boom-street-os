@@ -1,58 +1,88 @@
-/* frontend/src/components/inventory/Inventory.css */
 .inventory-table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 1rem;
-    background-color: #fff;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-top: 1.5rem;
+    background-color: var(--background-secondary);
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 0.875rem;
+    border: 1px solid var(--border-color);
 }
 
 .inventory-table th,
 .inventory-table td {
-    padding: 0.75rem 1rem;
+    padding: 0.85rem 1.25rem;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .inventory-table th {
-    background-color: #f8f9fa;
+    background-color: var(--background-secondary-light);
     font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
 }
 
-.inventory-table tbody tr:hover {
-    background-color: #f1f3f5;
+.inventory-table tbody tr {
+    transition: background-color 0.2s;
 }
 
-/* Add these styles to Inventory.css or a global CSS file */
+.inventory-table tbody tr:last-child td {
+    border-bottom: none;
+}
 
-.sale-type-badge {
-    padding: 0.25rem 0.5rem;
-    border-radius: 10px;
-    font-size: 0.8rem;
+/* Make text inside table cells more readable */
+.inventory-table td {
+    color: var(--text-secondary);
+}
+/* Make the first column (names, etc.) primary text color */
+.inventory-table td:first-child {
+    color: var(--text-primary);
     font-weight: 500;
-    color: white;
 }
 
-.sale-type-badge.Retail {
-    background-color: #007bff; /* Blue */
+
+.clickable-row:hover {
+    background-color: var(--background-secondary-light);
+    cursor: pointer;
 }
 
-.sale-type-badge.Scrap {
-    background-color: #28a745; /* Green */
+/* Style for the new, subtle type badge */
+.type-badge {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 4px;
+    background-color: var(--background-secondary-light);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
 }
+
+/* Styles for status badges (used on other pages) */
 .status-badge {
     padding: 0.25rem 0.6rem;
     border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 500;
+    font-size: 0.75rem;
+    font-weight: 600;
     color: white;
+    text-transform: uppercase;
 }
-.status-badge.in-progress { background-color: #007bff; }
-.status-badge.completed { background-color: #28a745; }
-.status-badge.awaiting-parts { background-color: #ffc107; color: #333; }
+.status-badge.paid { background-color: var(--color-success); }
+.status-badge.on-account, .status-badge.partially-paid { background-color: var(--color-warning); color: #111827; }
 
-/* Add this to the end of Inventory.css */
-.clickable-row:hover {
-    cursor: pointer;
-    background-color: #e9ecef; /* A light grey to indicate hover */
+/* ADD THESE STYLES TO THE END of Inventory.css */
+
+/* This targets the input and select fields specifically within our tables */
+.inventory-table .form-control {
+    padding: 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* This targets the finalize button in the payroll table */
+.inventory-table .btn-edit {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
 }

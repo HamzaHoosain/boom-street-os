@@ -125,18 +125,18 @@ body {
     display: flex; /* Use flex for internal layout within each panel */
     flex-direction: column; /* Stack content vertically inside panels */
     box-sizing: border-box;
+    /* Ensure panels can shrink if content inside them scrolls */
     min-height: 0;
     min-width: 0; /* Important for flex/grid items */
 }
 
-/* --- Product Type Sidebar Specifics (Left Panel) --- */
-/* This targets the outer div of the sidebar (now ProductTypeSidebar) */
-.category-sidebar-panel { 
+/* --- Category Sidebar Specifics (Left Panel) --- */
+.category-sidebar-panel { /* This targets the outer div of the sidebar */
     /* No additional styles needed here if .pos-panel covers it */
 }
 
-/* Styles for ProductTypeSidebar component itself */
-.category-sidebar h3 { /* The h3 inside ProductTypeSidebar */
+/* Styles for CategorySidebar component itself (inside the panel) */
+.category-sidebar h3 { /* Assuming h3 is part of CategorySidebar */
     color: #ffffff;
     margin-top: 0;
     margin-bottom: 15px;
@@ -330,10 +330,11 @@ body {
 }
 
 /* --- Cart Specifics (Cart.js component) --- */
+/* The Cart component itself is wrapped by .cart-customer-panel, and is set to flex-grow: 1 */
 .cart { /* The main div inside Cart.js */
-    flex-grow: 1; 
+    flex-grow: 1; /* Allows cart to fill available space within its panel */
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Stack header, items, total vertically */
 }
 
 .cart h3 {
@@ -349,10 +350,11 @@ body {
     list-style: none;
     padding: 0;
     margin: 0;
-    flex-grow: 1; 
-    overflow-y: auto;
-    margin-bottom: 15px;
-    max-height: calc(100vh - 400px); 
+    flex-grow: 1; /* Allow items list to grow and take space */
+    overflow-y: auto; /* Enable scrolling for the item list */
+    margin-bottom: 15px; /* Space before total summary */
+    /* Adjust max-height based on your overall layout and fixed header/footer heights */
+    max-height: calc(100vh - 400px); /* Example: 100vh minus ~400px for header, customer, total, button. Fine-tune this. */
 }
 
 .cart-items li {
@@ -360,7 +362,7 @@ body {
     justify-content: space-between;
     align-items: center;
     padding: 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.08); 
+    border-bottom: 1px solid rgba(255,255,255,0.08); /* Very subtle line dividers */
     color: #e0e0e0;
 }
 
@@ -396,7 +398,7 @@ body {
 .price-editable {
     cursor: pointer;
     text-decoration: underline;
-    color: #72b2ff; 
+    color: #72b2ff; /* Bright blue for editable price */
     font-weight: 700;
 }
 
@@ -414,7 +416,7 @@ body {
 .remove-item-btn {
     background: none;
     border: none;
-    color: #dc3545; 
+    color: #dc3545; /* Red for remove button */
     font-size: 1.5em;
     cursor: pointer;
     margin-left: 10px;
@@ -427,14 +429,14 @@ body {
     color: #ff6677;
 }
 
-.cart-summary { 
+.cart-summary { /* The div containing totals */
     padding-top: 15px;
-    border-top: 1px solid rgba(255,255,255,0.12); 
+    border-top: 1px solid rgba(255,255,255,0.12); /* Subtle divider before totals */
     text-align: right;
     font-size: 1.1em;
     font-weight: 600;
     color: #e0e0e0;
-    margin-top: auto; 
+    margin-top: auto; /* Pushes the summary to the bottom of the flex container */
 }
 
 .cart-summary p {
@@ -443,21 +445,21 @@ body {
 
 .cart-summary hr {
     border: none;
-    border-top: 1px dashed rgba(255,255,255,0.1); 
+    border-top: 1px dashed rgba(255,255,255,0.1); /* Dashed line for VAT breakdown */
     margin: 10px 0;
 }
 
 .cart-summary strong {
     font-size: 1.3em;
     color: #ffffff;
-    font-weight: 900; 
+    font-weight: 900; /* Extra bold for final total */
 }
 
 /* Process Sale/Payout Buttons */
 .btn-process-sale, .btn-buy {
     width: 100%;
     padding: 15px;
-    background-color: #28a745; 
+    background-color: #28a745; /* Green for process sale */
     color: white;
     border: none;
     border-radius: 5px;
@@ -469,8 +471,8 @@ body {
     box-shadow: 0 3px 10px rgba(40, 167, 69, 0.4);
 }
 
-.btn-buy { 
-    background-color: #ffc107; 
+.btn-buy { /* Separate style for Buy/Payout button */
+    background-color: #ffc107; /* Orange for buy/payout */
     color: #333;
     box-shadow: 0 3px 10px rgba(255, 193, 7, 0.4);
 }
@@ -479,7 +481,7 @@ body {
 .btn-buy:hover { background-color: #e0a800; }
 
 .btn-process-sale:disabled, .btn-buy:disabled {
-    background-color: #6c757d; 
+    background-color: #6c757d; /* Grey for disabled */
     cursor: not-allowed;
     box-shadow: none;
 }
@@ -490,8 +492,8 @@ body {
     border-radius: 8px;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     padding: 30px;
-    max-width: 500px; 
-    margin: 50px auto; 
+    max-width: 500px; /* Constrain width for form */
+    margin: 50px auto; /* Center the form */
     color: #f0f0f0;
     box-sizing: border-box;
 }
@@ -516,8 +518,8 @@ body {
     color: #e0e0e0;
 }
 
-.form-control { 
-    width: calc(100% - 20px); 
+.form-control { /* General style for inputs and selects within forms */
+    width: calc(100% - 20px); /* Account for padding */
     padding: 10px;
     border: 1px solid #5a6b80;
     border-radius: 5px;
@@ -536,7 +538,7 @@ body {
 .btn-log-expense {
     width: 100%;
     padding: 12px;
-    background-color: #17a2b8; 
+    background-color: #17a2b8; /* Teal for expense button */
     color: white;
     border: none;
     border-radius: 5px;
@@ -555,7 +557,7 @@ body {
 /* --- Responsive Adjustments --- */
 @media (max-width: 1024px) {
     .pos-main-grid-layout {
-        grid-template-columns: 200px 1fr 280px; 
+        grid-template-columns: 200px 1fr 280px; /* Adjust columns for smaller screens */
         gap: 15px;
     }
     .pos-panel {
@@ -569,8 +571,8 @@ body {
 
 @media (max-width: 768px) {
     .pos-main-grid-layout {
-        grid-template-columns: 1fr; 
-        grid-auto-rows: min-content; 
+        grid-template-columns: 1fr; /* Stack panels vertically on small screens */
+        grid-auto-rows: min-content; /* Only take height needed by content */
         gap: 15px;
     }
     .pos-page-header-row {
@@ -587,7 +589,7 @@ body {
         flex-grow: 1;
     }
     .cart-items {
-        max-height: 300px; 
+        max-height: 300px; /* Give a fixed max-height to cart list on small screens */
     }
     .expense-form-container {
         margin: 20px auto;

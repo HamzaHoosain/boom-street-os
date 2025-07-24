@@ -1,17 +1,22 @@
+// frontend/src/pages/PosPage.js
+
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 
 import ProductList from '../components/pos/ProductList';
 import Cart from '../components/pos/Cart';
-import CategorySidebar from '../components/pos/CategorySidebar';
+// IMPORT THE RENAMED COMPONENT
+import ProductTypeSidebar from '../components/pos/ProductTypeSidebar'; // RENAMED FROM CategorySidebar
+// REMOVED: import CategorySidebar from '../components/pos/CategorySidebar';
 import CustomerSelect from '../components/pos/CustomerSelect';
 import CustomerSearchModal from '../components/pos/CustomerSearchModal';
 import Modal from '../components/layout/Modal';
 import PaymentModal from '../components/pos/PaymentModal';
 import ChargeToAccountModal from '../components/pos/ChargeToAccountModal';
 import SearchBar from '../components/common/SearchBar';
-import '../components/pos/Pos.css';
+import PosLayout from '../components/pos/PosLayout';
+import '../components/pos/Pos.css'; // This is now for component-specific styles
 
 // --- Re-usable Form for the Expense Mode ---
 const ExpenseForm = ({ onLogExpense }) => {
@@ -24,9 +29,11 @@ const ExpenseForm = ({ onLogExpense }) => {
     const { selectedBusiness } = useContext(AuthContext);
 
     useEffect(() => {
-        api.get('/cash/safes').then(res => setSafes(res.data));
-        api.get('/expenses/categories').then(res => setExpenseCategories(res.data));
-    }, []);
+        if (selectedBusiness?.business_unit_id) {
+            api.get('/cash/safes').then(res => setSafes(res.data));
+            api.get('/expenses/categories').then(res => setExpenseCategories(res.data));
+        }
+    }, [selectedBusiness]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -63,10 +70,12 @@ const PosPage = () => {
 
     // State
     const [products, setProducts] = useState([]);
-    const [categories, setCategories] = useState([]);
+    // RENAMED STATE: categories -> productTypes
+    const [productTypes, setProductTypes] = useState([]);
     const [safes, setSafes] = useState([]);
     const [filteredProducts, setFilteredProducts] = useState([]);
-    const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+    // RENAMED STATE: selectedCategoryId -> selectedProductType
+    const [selectedProductType, setSelectedProductType] = useState(null); // Null means "All Products"
     const [searchTerm, setSearchTerm] = useState('');
     const [cartItems, setCartItems] = useState([]);
     const [payoutSafeId, setPayoutSafeId] = useState('');
@@ -77,6 +86,9 @@ const PosPage = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [lastSaleId, setLastSaleId] = useState(null);
+
+    // Define VAT rate as a constant
+    const VAT_RATE = 0.15; // 15% VAT
 
     // Determine available modes
     const availableModes = [];
@@ -91,7 +103,11 @@ const PosPage = () => {
 
         if (selectedBusiness?.business_unit_id) {
             setError(''); setSuccess(''); setCartItems([]); setProducts([]);
-            setFilteredProducts([]); setCategories([]); setLastSaleId(null);
+            setFilteredProducts([]); 
+            // Reset product types and selected type
+            setProductTypes([]); 
+            setSelectedProductType(null); 
+            setLastSaleId(null);
             setSelectedCustomer(null); setPayoutSafeId(''); setSearchTerm('');
 
             const fetchData = async () => {
@@ -99,16 +115,28 @@ const PosPage = () => {
                     const productsRes = await api.get(`/products/${selectedBusiness.business_unit_id}`);
                     setProducts(productsRes.data);
                     
-                    if (defaultMode === 'sell') {
-                        const categoriesRes = await api.get(`/categories/${selectedBusiness.business_unit_id}`);
-                        setCategories(categoriesRes.data);
-                    } else if (defaultMode === 'buy') {
+                    // Extract unique product types from the fetched products
+                    const uniqueTypes = Array.from(new Set(
+                        productsRes.data
+                            .map(p => p.unit_type)
+                            .filter(type => type !== null && type !== undefined && type !== '') // Filter out null/undefined/empty types
+                    )).sort(); // Sort alphabetically
+                    setProductTypes(uniqueTypes);
+                    
+                    // The categories API call is no longer needed
+                    // if (defaultMode === 'sell') {
+                    //     const categoriesRes = await api.get(`/categories/${selectedBusiness.business_unit_id}`);
+                    //     setCategories(categoriesRes.data);
+                    // } else if (defaultMode === 'buy') {
+
+                    // Fetch safes for 'buy' mode
+                    if (defaultMode === 'buy') {
                         const safesRes = await api.get('/cash/safes');
                         setSafes(safesRes.data);
                         const scrapyardFloat = safesRes.data.find(s => s.name === 'Scrapyard Float');
-    if (scrapyardFloat) {
-        setPayoutSafeId(scrapyardFloat.id);
-    }
+                        if (scrapyardFloat) {
+                            setPayoutSafeId(scrapyardFloat.id);
+                        }
                     }
                 } catch (err) {
                     setError('Failed to fetch initial data for this terminal mode.');
@@ -118,12 +146,13 @@ const PosPage = () => {
         }
     }, [selectedBusiness]);
     
-    // Master filtering effect for both category and search
+    // Master filtering effect for both product type and search term
     useEffect(() => {
         let tempProducts = [...products];
 
-        if (selectedCategoryId) {
-            tempProducts = tempProducts.filter(p => p.category_id === selectedCategoryId);
+        // FILTERING LOGIC CHANGED: now filters by unit_type
+        if (selectedProductType) { // If a specific product type is selected (not 'All Products')
+            tempProducts = tempProducts.filter(p => p.unit_type === selectedProductType);
         }
 
         if (searchTerm) {
@@ -134,20 +163,21 @@ const PosPage = () => {
             );
         }
         setFilteredProducts(tempProducts);
-    }, [searchTerm, selectedCategoryId, products]);
+    }, [searchTerm, selectedProductType, products]); // DEPENDENCY CHANGED
 
     const handleAddToCart = (product) => {
         setSuccess(''); setLastSaleId(null);
         if (mode === 'buy') {
             setCartItems(prev => [...prev, { ...product, quantity: 1, cartId: Date.now() }]);
-    return;
-}
+            return;
+        }
         setCartItems(prev => {
             const exists = prev.find(item => item.id === product.id);
             if (exists) {
                 return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
             }
-            return [...prev, { ...product, quantity: 1, cartId: Date.now() }];
+            const sellingPrice = parseFloat(product.selling_price) || 0; 
+            return [...prev, { ...product, quantity: 1, selling_price: sellingPrice, cartId: Date.now() }];
         });
     };
 
@@ -156,17 +186,17 @@ const PosPage = () => {
     };
     
     const handleUpdatePrice = (cartId, newPrice) => {
+        const price = parseFloat(newPrice);
         setCartItems(prev => prev.map(item => 
-            item.cartId === cartId ? { ...item, selling_price: newPrice } : item
+            item.cartId === cartId ? { ...item, selling_price: isNaN(price) ? 0 : price } : item
         ));
-        
-};
-const handleQuantityChange = (cartId, newQuantity) => {
-    // Convert the input to a number, defaulting to 0 if it's not a valid number
-    const quantity = parseFloat(newQuantity);
-    setCartItems(prev => prev.map(item =>
-        item.cartId === cartId ? { ...item, quantity: isNaN(quantity) ? 0 : quantity } : item
-    ));
+    };
+
+    const handleQuantityChange = (cartId, newQuantity) => {
+        const quantity = parseFloat(newQuantity);
+        setCartItems(prev => prev.map(item =>
+            item.cartId === cartId ? { ...item, quantity: isNaN(quantity) ? 0 : quantity } : item
+        ));
     };
 
     const handleProcess = () => {
@@ -175,7 +205,7 @@ const handleQuantityChange = (cartId, newQuantity) => {
             return;
         }
         if (mode === 'buy') {
-            handleProcessPayout();
+            handleProcessPayout(); 
         } else {
             setShowPaymentModal(true);
         }
@@ -184,11 +214,14 @@ const handleQuantityChange = (cartId, newQuantity) => {
     const handleProcessSale = async (paymentData) => {
         setShowPaymentModal(false);
         setError(''); setSuccess('');
-        const total_amount = cartItems.reduce((total, item) => total + (parseFloat(item.selling_price) * item.quantity), 0);
+        
         const saleData = {
             business_unit_id: selectedBusiness.business_unit_id,
-            total_amount,
-            cart_items: cartItems.map(item => ({ id: item.id, quantity: item.quantity, selling_price: item.selling_price })),
+            cart_items: cartItems.map(item => ({ 
+                id: item.id, 
+                quantity: item.quantity, 
+                selling_price: parseFloat(item.selling_price) || 0 
+            })),
             customer_id: selectedCustomer ? selectedCustomer.id : null,
             payment: paymentData
         };
@@ -259,28 +292,110 @@ const handleQuantityChange = (cartId, newQuantity) => {
         setSelectedCustomer(null);
     };
 
-    const cartTotal = cartItems.reduce((total, item) => {
-        const price = mode === 'buy' ? parseFloat(item.cost_price) : parseFloat(item.selling_price);
-        return total + price * item.quantity;
+    const subtotalPreVat = cartItems.reduce((total, item) => {
+        const price = mode === 'buy' ? (parseFloat(item.cost_price) || 0) : (parseFloat(item.selling_price) || 0);
+        const quantity = parseFloat(item.quantity) || 0;
+        return total + price * quantity;
     }, 0);
 
+    const totalVatAmount = subtotalPreVat * VAT_RATE;
+    const grandTotal = subtotalPreVat + totalVatAmount;
+
     if (!selectedBusiness || !selectedBusiness.business_unit_id) {
-        return ( <div><h1>Terminal</h1><p>Please select a specific business unit from the header.</p></div> );
+        return ( <div><h1>Terminal</h1><p>Please select a specific business unit from the header to use this feature.</p></div> );
     }
 
+    // --- NEW: Define the content for each of the three panels ---
+    const leftPanelContent = (
+        <div className="pos-panel category-sidebar-panel">
+            {/* RENDER THE RENAMED PRODUCT TYPES COMPONENT */}
+            {productTypes.length > 0 && 
+                <ProductTypeSidebar // RENAMED COMPONENT
+                    productTypes={productTypes} // NEW PROP
+                    selectedProductType={selectedProductType} // NEW PROP
+                    onSelectProductType={setSelectedProductType} // NEW PROP
+                />
+            }
+        </div>
+    );
+    
+    const mainContentPanel = (
+        <div className="pos-panel main-product-panel">
+            <SearchBar 
+                searchTerm={searchTerm}
+                setSearchTerm={setSearchTerm}
+                placeholder="Search products by name or SKU..."
+            />
+            <div className="product-list-area">
+                <ProductList products={filteredProducts} onAddToCart={handleAddToCart} isBuyMode={mode === 'buy'} />
+            </div>
+        </div>
+    );
+
+    const rightPanelContent = (
+        <div className="pos-panel cart-customer-panel">
+            {mode === 'sell' && 
+                <CustomerSelect 
+                    selectedCustomer={selectedCustomer} 
+                    onSelectCustomer={() => setShowCustomerModal(true)} 
+                    onClearCustomer={() => setSelectedCustomer(null)} 
+                />
+            }
+            {mode === 'buy' && (
+                <div className="payout-source-selector">
+                    <h4>Payout Source</h4>
+                    <select value={payoutSafeId} onChange={e => setPayoutSafeId(e.target.value)} className="form-control" required>
+                        <option value="">-- Select a Till/Float --</option>
+                        {safes.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                </div>
+            )}
+            <Cart
+                cartItems={cartItems}
+                onRemoveFromCart={handleRemoveFromCart}
+                onProcessSale={handleProcess}
+                onQuantityChange={handleQuantityChange}
+                onUpdatePrice={handleUpdatePrice}
+                isBuyMode={mode === 'buy'}
+                subtotalPreVat={subtotalPreVat}
+                totalVatAmount={totalVatAmount}
+                grandTotal={grandTotal}
+                vatRate={VAT_RATE}
+            />
+        </div>
+    );
+
+
     return (
-        <div>
-            <h1>{selectedBusiness.business_unit_name} Terminal</h1>
-            <div className="mode-selector">
-                {availableModes.map(m => <button key={m} onClick={() => {setCartItems([]); setSuccess(''); setError(''); setMode(m);}} className={mode === m ? 'active' : ''}>{m.charAt(0).toUpperCase() + m.slice(1)}</button>)}
+        <div className="pos-page-wrapper">
+            <div className="pos-page-header-row">
+                <h1>{selectedBusiness.business_unit_name} Terminal</h1>
+                <div className="mode-selector">
+                    {availableModes.map(m => (
+                        <button 
+                            key={m} 
+                            onClick={() => {
+                                setCartItems([]);
+                                setSuccess('');
+                                setError('');
+                                setMode(m);
+                            }}
+                            className={mode === m ? 'active' : ''}
+                        >
+                            {m.charAt(0).toUpperCase() + m.slice(1)}
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            {error && <p className="alert-error" style={{marginTop: '1rem'}}>{error}</p>}
+            {error && <p className="alert-error">{error}</p>}
             {success && (
                 <div className="alert-success">
                     <span>{success}</span>
                     {lastSaleId && mode === 'sell' && (
-                        <a href={`/invoice/${lastSaleId}`} target="_blank" rel="noopener noreferrer" className="btn-print">Print Invoice</a>
+                        <a href={`/invoice/${lastSaleId}`} target="_blank" rel="noopener noreferrer" className="btn-print">
+                            Print Invoice
+                        </a>
                     )}
                 </div>
             )}
@@ -288,39 +403,11 @@ const handleQuantityChange = (cartId, newQuantity) => {
             {mode === 'expense' ? (
                 <ExpenseForm onLogExpense={handleLogExpense} />
             ) : (
-                <div className="pos-layout">
-                    {categories.length > 0 && <CategorySidebar categories={categories} selectedCategoryId={selectedCategoryId} onSelectCategory={setSelectedCategoryId} />}
-                    <div className="product-list-container">
-                        
-                        <SearchBar 
-                            searchTerm={searchTerm}
-                            setSearchTerm={setSearchTerm}
-                            placeholder="Search products by name or SKU..."
-                        />
-
-                        <ProductList products={filteredProducts} onAddToCart={handleAddToCart} isBuyMode={mode === 'buy'} />
-                    </div>
-                    <div className="cart-container">
-                        {mode === 'sell' && <CustomerSelect selectedCustomer={selectedCustomer} onSelectCustomer={() => setShowCustomerModal(true)} onClearCustomer={() => setSelectedCustomer(null)} />}
-                        {mode === 'buy' && (
-                            <div className="payout-source-selector">
-                                <h4>Payout Source</h4>
-                                <select value={payoutSafeId} onChange={e => setPayoutSafeId(e.target.value)} className="form-control" required>
-                                    <option value="">-- Select a Till/Float --</option>
-                                    {safes.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                                </select>
-                            </div>
-                        )}
-                        <Cart
-                            cartItems={cartItems}
-                            onRemoveFromCart={handleRemoveFromCart}
-                            onProcessSale={handleProcess}
-                             onQuantityChange={handleQuantityChange}
-                            onUpdatePrice={handleUpdatePrice}
-                            isBuyMode={mode === 'buy'}
-                        />
-                    </div>
-                </div>
+                <PosLayout 
+                    leftPanel={leftPanelContent}
+                    mainContent={mainContentPanel}
+                    rightPanel={rightPanelContent}
+                />
             )}
             
             <Modal show={showCustomerModal} onClose={() => setShowCustomerModal(false)} title="Select a Customer">
@@ -329,7 +416,7 @@ const handleQuantityChange = (cartId, newQuantity) => {
             
             <Modal show={showPaymentModal} onClose={() => setShowPaymentModal(false)} title="Payment">
                 <PaymentModal 
-                    totalAmount={cartTotal}
+                    totalAmount={grandTotal}
                     onProcessPayment={handleProcessSale}
                     onProcessAccountCharge={() => setShowAccountChargeModal(true)}
                     onClose={() => setShowPaymentModal(false)}

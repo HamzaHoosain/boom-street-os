@@ -1,73 +1,21 @@
-/* frontend/src/components/pos/PaymentModal.css */
-.payment-modal h2 {
-    text-align: center;
-    margin-top: 0;
-    margin-bottom: 0.5rem;
-    color: #343a40;
-}
-
-.payment-total {
-    text-align: center;
-    font-size: 1.75rem;
-    margin: 1.5rem 0;
-    padding: 1rem;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-}
-
-.payment-options {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-.payment-options h4 {
-    margin-bottom: 0.5rem;
-    text-align: center;
-    color: #6c757d;
-    font-weight: 400;
-}
-
-.btn-payment {
-    width: 100%;
-    padding: 1.25rem;
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: opacity 0.2s;
-}
-
-.btn-payment:hover {
-    opacity: 0.9;
-}
-
-/* Specific button colors */
-.btn-payment.cash { background-color: #28a745; } /* Green */
-.btn-payment.card-nedbank, .btn-payment.eft-nedbank {
-    background-color: #2E8540; /* Nedbank Green */
-}
-.btn-payment.card-capitec, .btn-payment.eft-capitec {
-    background-color: #0072B8; /* Capitec Blue */
-}
-
+.payment-modal h2 { text-align: center; margin-top: 0; color: var(--text-primary); }
+.payment-total { text-align: center; font-size: 1.75rem; margin: 1.5rem 0; padding: 1rem; background-color: var(--background-primary); border-radius: 8px; }
+.payment-options { display: flex; flex-direction: column; gap: 0.75rem; }
+.payment-options h4 { margin-bottom: 0.5rem; text-align: center; color: var(--text-secondary); font-weight: 400; }
+.btn-payment { width: 100%; padding: 1.25rem; font-size: 1.1rem; font-weight: 500; color: white; border: none; border-radius: 6px; cursor: pointer; }
+.btn-payment.cash { background-color: var(--color-success); }
+.btn-payment.account { background-color: var(--color-warning); color: #111827; }
+.btn-payment.card-nedbank, .btn-payment.eft-nedbank { background-color: #2E8540; }
+.btn-payment.card-capitec, .btn-payment.eft-capitec { background-color: #0072B8; }
 .btn-close-modal {
     margin-top: 2rem;
     width: 100%;
     background: transparent;
-    color: #6c757d;
+    color: var(--text-secondary);
     font-weight: 500;
-    border: 1px solid #ced4da;
+    border: 1px solid var(--border-color);
     padding: 0.75rem;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
-    transition: background-color 0.2s;
 }
-
-.btn-close-modal:hover {
-    background-color: #f1f3f5;
-}
-
-.btn-payment.account { background-color: #ffc107; color: #212529; }
+.btn-close-modal:hover { background-color: var(--background-secondary-light); }

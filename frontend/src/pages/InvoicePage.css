@@ -1,68 +1,221 @@
 /* frontend/src/pages/InvoicePage.css */
+
+/* --- ADD THIS LINE AT THE VERY TOP OF YOUR CSS FILE --- */
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
+/* --------------------------------------------------- */
+
+
+/* --- Base Styles --- */
 body {
-    background-color: #eee;
+    font-family: 'Lato', sans-serif; /* Applied globally, assuming this page might be outside main app layout */
+    color: #333; /* Darker text for good contrast */
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f2f5; /* Light grey background for the page */
 }
+
+/* --- Invoice Container (Paper-like appearance) --- */
 .invoice-container {
-    width: 800px;
-    margin: 2rem auto;
-    background: white;
-    padding: 2.5rem;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    font-family: Arial, sans-serif;
+    width: 210mm; /* A4 width standard */
+    min-height: 297mm; /* A4 height standard */
+    margin: 20px auto; /* Center the invoice on the page */
+    padding: 30px 40px; /* Adjust padding for visual balance */
+    background-color: #fff; /* White background for the invoice itself */
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    border-radius: 5px; /* Slightly rounded corners */
+    display: flex;
+    flex-direction: column;
 }
+
+/* --- Invoice Header Section --- */
 .invoice-header {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 2rem;
-    border-bottom: 2px solid #333;
-    padding-bottom: 1rem;
+    align-items: flex-end; /* Aligns company details to the bottom of the header space */
+    margin-bottom: 25px; /* Space below the header */
+    padding-bottom: 15px; /* Padding above the bottom line */
+    border-bottom: 1px solid #ddd; /* Lighter, more subtle line than before */
 }
-.invoice-header h1 { margin: 0; }
-.company-details { text-align: right; }
-.invoice-meta, .customer-details { margin-bottom: 2rem; }
-.invoice-items {
-    width: 100%;
-    border-collapse: collapse;
-}
-.invoice-items th, .invoice-items td {
-    border-bottom: 1px solid #eee;
-    padding: 0.75rem;
+
+.invoice-title-block {
     text-align: left;
 }
-.invoice-items th { background: #f8f9fa; }
-.invoice-items td:nth-child(3), .invoice-items td:nth-child(4), .invoice-items td:nth-child(5) {
-    text-align: right;
+
+.invoice-header h1 {
+    font-size: 2.4em; /* Larger, prominent invoice title */
+    font-weight: 700; /* Bold Lato */
+    color: #444;
+    margin: 0 0 10px 0; /* Space below title */
 }
+
+.invoice-meta-item {
+    font-size: 0.9em;
+    font-weight: 400; /* Regular Lato */
+    margin: 3px 0;
+    color: #666;
+}
+
+.company-details {
+    text-align: right;
+    font-size: 0.95em; /* Slightly larger than meta items */
+    font-weight: 400; /* Regular Lato */
+    line-height: 1.4;
+    color: #555;
+}
+
+.company-logo { /* If you add a logo */
+    max-width: 180px; /* Adjust size as needed */
+    height: auto;
+    margin-bottom: 10px;
+}
+
+/* --- Customer Details Section --- */
+.customer-details-section {
+    margin-bottom: 25px; /* Space below customer details */
+}
+
+.customer-details-section h3 {
+    font-size: 1.1em;
+    font-weight: 700; /* Bold Lato */
+    margin: 0 0 8px 0;
+    color: #555;
+}
+
+.customer-details-section p {
+    margin: 2px 0;
+    font-size: 0.95em;
+    font-weight: 400; /* Regular Lato */
+    color: #444;
+}
+
+/* --- Invoice Items Table --- */
+.invoice-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 30px; /* Space below the table */
+    flex-grow: 1; /* Allows the table area to expand and push footer down */
+}
+
+.invoice-items-table th,
+.invoice-items-table td {
+    padding: 10px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee; /* Light lines between rows */
+}
+
+.invoice-items-table th {
+    background-color: #f8f8f8; /* Light background for headers */
+    font-weight: 700; /* Bold headers */
+    color: #555;
+    text-transform: uppercase;
+    font-size: 0.85em; /* Slightly smaller for headers */
+    letter-spacing: 0.5px;
+}
+
+.invoice-items-table td {
+    font-size: 0.9em; /* Item text size */
+    color: #444;
+}
+
+/* Align numeric columns to the right for better readability */
+.invoice-items-table .qty-col,
+.invoice-items-table .unit-price-col,
+.invoice-items-table .total-col {
+    text-align: right;
+    white-space: nowrap; /* Prevent numbers from wrapping */
+}
+
+/* Adjust column widths for better visual balance (percentages can be fine-tuned) */
+.invoice-items-table .sku-col { width: 15%; }
+.invoice-items-table .description-col { width: 45%; }
+.invoice-items-table .qty-col { width: 10%; }
+.invoice-items-table .unit-price-col { width: 15%; }
+.invoice-items-table .total-col { width: 15%; }
+
+
+/* --- Invoice Footer Section (Totals and Notes) --- */
 .invoice-footer {
-    margin-top: 2rem;
-    padding-top: 1rem;
-    border-top: 2px solid #333;
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-end; /* Aligns thank you note with the bottom of totals */
+    padding-top: 25px; /* Padding above the top line */
+    border-top: 2px solid #ccc; /* Thicker line above totals, matches sample */
+    margin-top: 20px; /* Space above the footer */
 }
-.invoice-total {
-    font-size: 1.5rem;
-    font-weight: bold;
-}
-.thank-you-note { color: #555; }
 
-/* Styles for printing */
+.invoice-summary {
+    width: 300px; /* Fixed width for the summary box, adjust as needed */
+    margin-left: auto; /* Pushes the summary to the right */
+    text-align: right;
+}
+
+.summary-line {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px; /* Space between lines */
+    font-size: 1em;
+    color: #444;
+}
+
+.summary-line span:first-child {
+    font-weight: 400; /* Regular for labels */
+}
+
+.summary-line span:last-child {
+    font-weight: 700; /* Bold for values */
+}
+
+.summary-divider {
+    border: none;
+    border-top: 1px dashed #ddd; /* Dashed line for subtotal */
+    margin: 10px 0;
+}
+
+.final-total-line {
+    font-size: 1.4em; /* Larger for final total */
+    font-weight: 900; /* Extra bold for final total */
+    color: #222;
+    margin-top: 15px; /* Extra space above final total */
+}
+
+.thank-you-note {
+    width: 40%; /* Adjust width for the notes section */
+    font-size: 0.9em;
+    color: #777;
+    line-height: 1.5;
+    text-align: left; /* Align notes to the left */
+}
+
+.thank-you-note p {
+    margin: 0 0 5px 0;
+}
+
+/* --- Print Styles (Crucial for proper printing) --- */
 @media print {
     body {
         background-color: white; /* Remove gray background for printing */
+        margin: 0;
+        padding: 0;
     }
     .invoice-container {
-        width: 100%;
-        margin: 0;
-        box-shadow: none;
-        padding: 0;
+        width: 100%; /* Use full width for print */
+        margin: 0; /* Remove margins */
+        box-shadow: none; /* Remove shadow */
+        padding: 0; /* Remove padding */
+        border-radius: 0;
+        min-height: auto; /* Allow content to dictate height */
     }
-    /* Hide the sidebar and other app UI when printing */
-    .app-layout .sidebar, .non-printable {
-        display: none;
+    /* Hide non-printable elements if your app layout is around this invoice */
+    /* Adjust these selectors if your main app layout uses different class names */
+    .app-layout .sidebar, .non-printable, .header-navbar { 
+        display: none !important;
     }
-    .content-area {
-        padding: 0;
+    .content-area { /* Adjust this if your main content wrapper has a different class */
+        padding: 0 !important;
+    }
+    /* Ensure no page breaks inside critical sections */
+    .invoice-header, .customer-details-section, .invoice-items-table, .invoice-footer {
+        page-break-inside: avoid;
     }
 }

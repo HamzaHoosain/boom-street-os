@@ -1,6 +1,7 @@
 // frontend/src/components/pos/ChargeToAccountModal.js
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../../context/AuthContext';
+import './ChargeToAccountModal.css'; // Assuming you have some styles for this modal
 import api from '../../services/api';
 
 const ChargeToAccountModal = ({ onCharge, onClose }) => {

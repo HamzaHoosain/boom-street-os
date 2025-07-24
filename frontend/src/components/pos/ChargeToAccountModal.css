@@ -1,0 +1,32 @@
+/* frontend/src/components/pos/ChargeToAccountModal.css */
+
+/* We can reuse many of the global form styles */
+/* This file is for specific overrides and layout */
+
+.charge-account-modal-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; /* Space between elements */
+}
+
+.charge-account-modal-layout .form-group {
+    margin-bottom: 0; /* Remove default bottom margin */
+}
+
+.charge-account-modal-controls {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+}
+
+.charge-account-modal-controls .btn-close-modal,
+.charge-account-modal-controls .btn-login {
+    width: 100%;
+    margin: 0;
+}
+
+.charge-account-modal-controls .btn-login:disabled {
+    background-color: var(--background-secondary-light);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+}

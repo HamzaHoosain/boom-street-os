@@ -1,52 +1,65 @@
 /* frontend/src/components/pos/CustomerSelect.css */
+
 .customer-select-container {
     padding: 1rem;
-    border-bottom: 1px solid #eee;
-    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .customer-select-container h4 {
     margin-top: 0;
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-    color: #495057;
+    margin-bottom: 0.75rem;
+    font-size: 0.875rem; /* Smaller, subtitle font size */
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .customer-display {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: #e9ecef;
-    padding: 0.5rem 1rem;
-    border-radius: 4px;
+    background: var(--background-secondary-light);
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
 }
 
 .customer-display p {
     margin: 0;
     font-weight: 500;
+    color: var(--text-primary);
 }
 
 .customer-display button {
-    background: #6c757d;
-    color: white;
+    background: var(--border-color);
+    color: var(--text-primary);
     border: none;
-    padding: 0.25rem 0.5rem;
+    padding: 0.25rem 0.75rem;
     font-size: 0.8rem;
     border-radius: 4px;
     cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.customer-display button:hover {
+    background-color: #4B5563; /* A slightly lighter grey for hover */
 }
 
 .btn-assign {
     width: 100%;
     padding: 0.75rem;
-    background-color: #f8f9fa;
-    border: 1px dashed #ccc;
+    background-color: transparent;
+    border: 1px dashed var(--border-color);
+    color: var(--text-secondary);
     cursor: pointer;
-    border-radius: 4px;
-    transition: background-color 0.2s;
+    border-radius: 6px;
     font-weight: 500;
+    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
 }
 
 .btn-assign:hover {
-    background-color: #e9ecef;
+    background-color: var(--background-secondary-light);
+    border-color: var(--accent-primary);
+    border-style: solid;
+    color: var(--text-primary);
 }

@@ -1,18 +1,3 @@
-/* frontend/src/components/layout/Layout.css */
-.app-layout {
-    display: flex;
-}
-
-.main-content {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    height: 100vh;
-}
-
-.content-area {
-    flex-grow: 1;
-    padding: 2rem;
-    overflow-y: auto;
-    background-color: #f8f9fa;
-}
+.app-layout { display: flex; height: 100vh; }
+.main-content { display: flex; flex-direction: column; flex-grow: 1; background-color: var(--background-primary); }
+.content-area { flex-grow: 1; padding: 2rem; overflow-y: auto; }

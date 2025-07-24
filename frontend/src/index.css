@@ -1,13 +1,108 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* --- GLOBAL STYLES - DARK MODE --- */
+
+/* 1. Import a modern, professional font from Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* 2. Define our new color palette using CSS Variables */
+:root {
+  --background-primary: #111827;
+  --background-secondary: #1F2937;
+  --background-secondary-light: #374151;
+  
+  --border-color: #374151;
+  
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  
+  --accent-primary: #3B82F6;
+  --accent-hover: #2563EB;
+
+  /* --- NEW REFINED COLORS --- */
+  --color-success: #10B981;  /* A bright, modern green */
+  --color-success-bg: rgba(16, 185, 129, 0.1); /* A subtle green background */
+  
+  --color-error: #F87171;    /* A softer, more readable red */
+  --color-error-bg: rgba(239, 68, 68, 0.1); /* A subtle red background */
+
+  --color-warning: #FBBF24; /* A vibrant amber/yellow */
+  --color-warning-bg: rgba(251, 191, 36, 0.1);
+  
+  --color-info: #60A5FA;    /* A lighter, more readable blue */
+  --color-info-bg: rgba(59, 130, 246, 0.1);
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* 3. Apply the foundation styles to the whole application */
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  background-color: var(--background-primary);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+/* 4. Global styles for common elements */
+h1, h2, h3, h4 {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* --- Global Form Styles --- */
+.form-group { margin-bottom: 1.25rem; }
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+    background-color: var(--background-secondary-light);
+    color: var(--text-primary);
+    box-sizing: border-box;
+}
+.form-control:focus {
+    outline: none;
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* --- Global Button Styles --- */
+.btn-login, .btn-edit {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: white;
+    background-color: var(--accent-primary);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.btn-login:hover, .btn-edit:hover { background-color: var(--accent-hover); }
+
+/* --- Global Alert Styles --- */
+.alert-error {
+    color: var(--text-primary);
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid var(--color-error);
+    padding: 1rem;
+    border-radius: 6px;
+}
+.alert-success {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--text-primary);
+    background-color: rgba(16, 185, 129, 0.1);
+    border: 1px solid var(--color-success);
+    padding: 1rem;
+    border-radius: 6px;
 }

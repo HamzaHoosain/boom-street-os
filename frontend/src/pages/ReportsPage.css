@@ -1,84 +1,67 @@
+/* frontend/src/pages/ReportsPage.css */
+
 .report-controls {
     display: flex;
     flex-wrap: wrap; /* Allow items to wrap on smaller screens */
-    gap: 1rem;
+    gap: 1.5rem;
     align-items: flex-end;
-    background: #fff;
+    background-color: var(--background-secondary);
     padding: 1.5rem;
     border-radius: 8px;
+    border: 1px solid var(--border-color);
     margin-bottom: 2rem;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .report-controls .form-group {
     margin-bottom: 0;
 }
 
-.report-controls button {
-    height: 40px; /* Align button height with input fields */
-}
-
-.report-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.75rem; /* Tighter spacing for a statement look */
-    margin-top: 2rem;
-    max-width: 800px;
-}
-
-.report-card {
-    background: #fff;
-    padding: 1.25rem 1.5rem;
+.report-container {
+    background: var(--background-secondary);
+    padding: 1.5rem;
     border-radius: 8px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    border-left: 5px solid #ccc;
-    transition: background-color 0.2s;
+    border: 1px solid var(--border-color);
+    margin-top: 1rem;
 }
 
-/* --- Financial Statement Styling --- */
-
-/* Standard line items */
-.report-card.primary { 
-    border-left-color: #007bff; 
-}
-.report-card.secondary { 
-    border-left-color: #6c757d; 
-    margin-left: 2rem; /* Indent for subtractions */
-    max-width: calc(100% - 2rem);
+.report-container h2 {
+    margin-top: 0;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
 }
 
-/* Profit and special items */
-.report-card.profit { 
-    border-left-color: #28a745; 
-    background-color: #f8f9fa;
-}
-.report-card.profit.final { 
-    border-top: 2px solid #28a745; 
-    margin-top: 0.5rem;
-    padding-top: 1.25rem;
-}
-.report-card.tax { 
-    border-left-color: #dc3545; 
-    margin-left: 2rem;
-    max-width: calc(100% - 2rem);
-}
-.report-card.receivable { 
-    border-left-color: #ffc107; 
-    margin-top: 1.5rem; 
-    border-top: 1px solid #eee;
+.report-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    text-align: center;
 }
 
-/* Text styling inside the cards */
-.report-card span {
-    font-size: 1.1rem;
-    color: #495057;
+.summary-item {
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
 }
 
-.report-card strong {
-    font-size: 1.75rem;
-    font-weight: 600;
-    font-family: 'Courier New', Courier, monospace; /* Monospaced font for numbers */
+.summary-item span {
+    display: block;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
 }
+
+.summary-item strong {
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* Use the subtle background colors from our global theme */
+.summary-item.income { background-color: var(--color-success-bg); }
+.summary-item.income strong { color: var(--color-success); }
+
+.summary-item.expense { background-color: var(--color-error-bg); }
+.summary-item.expense strong { color: var(--color-error); }
+
+.summary-item.profit { background-color: var(--color-info-bg); }
+.summary-item.profit strong { color: var(--color-info); }

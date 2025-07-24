@@ -1,29 +1,61 @@
 /* frontend/src/components/pos/CustomerSearchModal.css */
-.customer-search-modal input {
-    margin-bottom: 1rem;
+
+/* The main container for the modal's content */
+.customer-search-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
+
+/* The search input bar */
+.customer-search-modal input.form-control {
+    background-color: var(--background-primary); /* Darker background for input */
+}
+
+/* The box that contains the search results */
 .search-results {
     min-height: 200px;
-    max-height: 400px;
+    max-height: 40vh; /* Use viewport height to be responsive */
     overflow-y: auto;
-    border: 1px solid #eee;
-    border-radius: 4px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--background-primary);
 }
+
 .search-results ul {
     list-style: none;
     padding: 0;
     margin: 0;
 }
+
 .search-results li {
     display: flex;
     justify-content: space-between;
+    align-items: center;
     padding: 0.75rem 1rem;
     cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s;
 }
+
+.search-results li:last-child {
+    border-bottom: none;
+}
+
 .search-results li:hover {
-    background-color: #f8f9fa;
+    background-color: var(--background-secondary-light);
 }
+
+.search-results li strong {
+    color: var(--text-primary);
+}
+
 .search-results li small {
-    color: #6c757d;
+    color: var(--text-secondary);
+}
+
+.search-results p {
+    padding: 1rem;
+    color: var(--text-secondary);
+    text-align: center;
 }

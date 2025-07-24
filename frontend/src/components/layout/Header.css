@@ -1,13 +1,16 @@
 /* frontend/src/components/layout/Header.css */
+
 .app-header {
     width: 100%;
-    padding: 1rem 2rem;
-    background-color: #fff;
-    border-bottom: 1px solid #dee2e6;
+    height: 65px; /* Give the header a fixed height */
+    padding: 0 2rem; /* Vertical padding is now 0 */
+    background-color: var(--background-secondary);
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
     box-sizing: border-box;
+    flex-shrink: 0;
 }
 
 .header-context {
@@ -16,33 +19,91 @@
     gap: 1rem;
 }
 
+/* Style for the static h2 when not an admin */
 .header-context h2 {
     margin: 0;
     font-size: 1.5rem;
+    color: var(--text-primary);
 }
 
+/* --- THIS IS THE FIX FOR THE DROPDOWN --- */
 .header-context select {
     font-size: 1.5rem;
-    font-weight: 700;
+    font-weight: 600;
     border: none;
-    background: transparent;
+    background-color: transparent;
+    color: var(--text-primary);
     cursor: pointer;
+    
+    /* Remove default browser appearance */
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+
+    /* Add padding for the custom arrow */
+    padding-right: 2rem; 
+    
+    /* Custom arrow icon using a data URI SVG */
+    background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="%239CA3AF"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>');
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 1.25em 1.25em;
 }
 
+.header-context select:focus {
+    outline: none;
+}
+/* --- END OF DROPDOWN FIX --- */
+
+
 .role-tag-header {
-    background-color: #6c757d;
-    color: white;
+    background-color: var(--background-secondary-light);
+    color: var(--text-secondary);
     padding: 0.3rem 0.6rem;
     border-radius: 4px;
     font-size: 0.8rem;
     font-weight: 500;
 }
 
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.cash-on-hand {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    background-color: var(--background-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.cash-on-hand strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
 .header-actions button {
-    background-color: #dc3545;
+    background-color: var(--color-error);
     color: white;
     border: none;
     padding: 0.5rem 1rem;
-    border-radius: 4px;
+    border-radius: 6px;
     cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.header-actions button:hover {
+    background-color: #B91C1C; /* A darker red on hover */
+}
+/* ADD THIS TO THE END of Header.css */
+
+/* This styles the individual options inside the dropdown */
+.header-context select option {
+    background-color: var(--background-secondary);
+    color: var(--text-primary);
+    font-weight: 500;
 }
