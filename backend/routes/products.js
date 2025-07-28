@@ -52,15 +52,48 @@ router.get('/single/:id', authMiddleware, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
-// @route   GET api/products
-// @desc    Get all products for a business unit
+// @route   GET api/products/:businessUnitId
+// @desc    Get all products for a business, intelligently sorted by popularity
 // @access  Private
 router.get('/:businessUnitId', authMiddleware, async (req, res) => {
+    const { businessUnitId } = req.params;
     try {
-        const products = await db.query('SELECT * FROM products WHERE business_unit_id = $1 ORDER BY name', [req.params.businessUnitId]);
+        // --- THIS IS THE NEW, MORE POWERFUL SQL QUERY ---
+        // It joins products with sale_items, sums the total quantity sold for each product,
+        // and then orders the results by that total quantity in descending order.
+        const query = `
+            SELECT
+                p.id,
+                p.business_unit_id,
+                p.name,
+                p.sku,
+                p.unit_type,
+                p.cost_price,
+                p.selling_price,
+                p.quantity_on_hand,
+                p.category_id,
+                p.image_url,
+                -- We use COALESCE to treat products never sold (NULL sum) as having a total of 0.
+                COALESCE(SUM(si.quantity_sold), 0) AS total_quantity_sold
+            FROM
+                products p
+            -- A LEFT JOIN is critical here. It ensures that products which have NEVER been sold
+            -- are still included in the list (they will just have a popularity of 0).
+            LEFT JOIN
+                sale_items si ON p.id = si.product_id
+            WHERE
+                p.business_unit_id = $1
+            GROUP BY
+                p.id -- Group by the unique product ID to sum correctly
+            ORDER BY
+                total_quantity_sold DESC, -- Sort by most popular first
+                p.name ASC; -- Then sort alphabetically for products with the same popularity
+        `;
+
+        const products = await db.query(query, [businessUnitId]);
         res.json(products.rows);
     } catch (err) {
-        console.error(err.message);
+        console.error("Get Products Error:", err.message);
         res.status(500).send('Server Error');
     }
 });
@@ -90,4 +123,15 @@ router.put('/:id', authMiddleware, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
+// In backend/routes/products.js, add this new route
+router.get('/alpha/:businessUnitId', authMiddleware, async (req, res) => {
+    const { businessUnitId } = req.params;
+    try {
+        const query = `SELECT * FROM products WHERE business_unit_id = $1 ORDER BY name ASC`;
+        const products = await db.query(query, [businessUnitId]);
+        res.json(products.rows);
+    } catch (err) { /* ... error handling ... */ }
+});
+
 module.exports = router;

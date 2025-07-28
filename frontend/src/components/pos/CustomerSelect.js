@@ -1,16 +1,21 @@
-// frontend/src/components/pos/CustomerSelect.js - VERIFIED
+// frontend/src/components/pos/CustomerSelect.js
+
 import React from 'react';
 import './CustomerSelect.css';
 
-// The props need to be destructured inside curly braces {}
-const CustomerSelect = ({ selectedCustomer, onSelectCustomer, onClearCustomer }) => {
+// CRITICAL FIX: Destructure the new `onViewCustomer` prop from the props object
+const CustomerSelect = ({ selectedCustomer, onSelectCustomer, onClearCustomer, onViewCustomer }) => {
     return (
         <div className="customer-select-container">
             <h4>Customer</h4>
             {selectedCustomer ? (
                 <div className="customer-display">
                     <p>{selectedCustomer.name}</p>
-                    <button onClick={onClearCustomer}>Change</button>
+                    <div className="customer-display-actions">
+                        {/* CRITICAL FIX: The onClick handler for this button now correctly uses the prop */}
+                        <button onClick={onViewCustomer} className="btn-view-account">View Account</button>
+                        <button onClick={onClearCustomer} className="btn-change-customer">Change</button>
+                    </div>
                 </div>
             ) : (
                 <button onClick={onSelectCustomer} className="btn-assign">

@@ -1,21 +1,87 @@
-.payment-modal h2 { text-align: center; margin-top: 0; color: var(--text-primary); }
-.payment-total { text-align: center; font-size: 1.75rem; margin: 1.5rem 0; padding: 1rem; background-color: var(--background-primary); border-radius: 8px; }
-.payment-options { display: flex; flex-direction: column; gap: 0.75rem; }
-.payment-options h4 { margin-bottom: 0.5rem; text-align: center; color: var(--text-secondary); font-weight: 400; }
-.btn-payment { width: 100%; padding: 1.25rem; font-size: 1.1rem; font-weight: 500; color: white; border: none; border-radius: 6px; cursor: pointer; }
-.btn-payment.cash { background-color: var(--color-success); }
-.btn-payment.account { background-color: var(--color-warning); color: #111827; }
-.btn-payment.card-nedbank, .btn-payment.eft-nedbank { background-color: #2E8540; }
-.btn-payment.card-capitec, .btn-payment.eft-capitec { background-color: #0072B8; }
-.btn-close-modal {
-    margin-top: 2rem;
-    width: 100%;
-    background: transparent;
-    color: var(--text-secondary);
-    font-weight: 500;
-    border: 1px solid var(--border-color);
-    padding: 0.75rem;
-    border-radius: 6px;
-    cursor: pointer;
+/* frontend/src/components/pos/PaymentModal.css */
+
+.payment-modal h2 {
+    text-align: center;
+    margin-top: 0;
+    color: #f0f0f0;
 }
-.btn-close-modal:hover { background-color: var(--background-secondary-light); }
+
+.payment-total {
+    background-color: #2e3a4e;
+    padding: 15px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 1.2em;
+    margin-bottom: 20px;
+}
+.payment-total strong {
+    font-size: 1.5em;
+    color: #72b2ff;
+}
+
+.payment-options h4 {
+    margin-top: 15px;
+    margin-bottom: 8px;
+    color: #adb5bd;
+    font-weight: 600;
+    border-bottom: 1px solid #4a5a70;
+    padding-bottom: 5px;
+}
+
+.payment-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.payment-divider {
+    border: none;
+    border-top: 1px solid #4a5a70;
+    margin: 8px 0;
+}
+
+.btn-payment {
+    width: 100%;
+    padding: 12px;
+    border-radius: 5px;
+    border: 1px solid transparent;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.btn-payment:disabled {
+    background-color: #6c757d;
+    color: #adb5bd;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-payment.account { background-color: #6f42c1; color: white; border-color: #8a63d2;}
+.btn-payment.account:hover:not(:disabled) { background-color: #5a3e9b; }
+
+.btn-payment.cash { background-color: #28a745; color: white; border-color: #4CAF50; }
+.btn-payment.cash:hover:not(:disabled) { background-color: #218838; }
+
+/* --- NEW GENERIC STYLES --- */
+.btn-payment.card-generic { background-color: #17a2b8; color: white; border-color: #1ca8dd; }
+.btn-payment.card-generic:hover:not(:disabled) { background-color: #138496; }
+
+.btn-payment.eft-generic { background-color: #fd7e14; color: white; border-color: #ff9d44; }
+.btn-payment.eft-generic:hover:not(:disabled) { background-color: #e66a00; }
+/* --- END OF NEW STYLES --- */
+
+.btn-close-modal {
+    width: 100%;
+    margin-top: 20px;
+    padding: 10px;
+    background: none;
+    border: 1px solid #6c757d;
+    color: #f0f0f0;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 5px;
+}
+.btn-close-modal:hover { background-color: #6c757d; }

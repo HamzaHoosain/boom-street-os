@@ -5,17 +5,19 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: #f0f2f5;
+    background-color: var(--background-primary);
     padding: 2rem;
     box-sizing: border-box;
 }
 .selector-header {
+     font-family: 'Lato', sans-serif;
     text-align: center;
     margin-bottom: 2rem;
 }
 .selector-header h2 {
     font-size: 2rem;
-    color: #333;
+    color: #ffffff;
+
 }
 .selector-grid {
     display: flex;
@@ -25,7 +27,7 @@
     max-width: 900px;
 }
 .selector-card {
-    background: white;
+    background: #38455e;
     padding: 2rem;
     border-radius: 8px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -49,7 +51,7 @@
     top: 10px;
     right: 10px;
     background: #007bff;
-    color: white;
+    color: rgb(20, 18, 18);
     padding: 0.25rem 0.5rem;
     border-radius: 4px;
     font-size: 0.75rem;
@@ -57,4 +59,23 @@
 }
 .selector-footer {
     margin-top: 2rem;
+}
+
+.selector-card:hover .role-tag {
+    background: #0056b3;
+}
+
+.selector-footer button {
+    background: #F87171;
+    color: #ffffff;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 4px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.selector-footer button:hover {
+    background: #B91C1C;
 }

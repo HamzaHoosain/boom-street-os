@@ -1,65 +1,78 @@
 /* frontend/src/components/pos/CustomerSelect.css */
 
 .customer-select-container {
-    padding: 1rem;
-    border-bottom: 1px solid var(--border-color);
+    text-align: center;
+    margin-bottom: 20px;
+    background-color: #4a5a70;
+    padding: 15px;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    flex-shrink: 0;
 }
 
 .customer-select-container h4 {
-    margin-top: 0;
-    margin-bottom: 0.75rem;
-    font-size: 0.875rem; /* Smaller, subtitle font size */
-    color: var(--text-secondary);
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.customer-display {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: var(--background-secondary-light);
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
+    margin: 0 0 10px 0;
+    color: #f0f0f0;
+    font-weight: 600;
 }
 
 .customer-display p {
-    margin: 0;
-    font-weight: 500;
-    color: var(--text-primary);
+    font-size: 1.2em;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 10px 0;
 }
 
-.customer-display button {
-    background: var(--border-color);
-    color: var(--text-primary);
-    border: none;
-    padding: 0.25rem 0.75rem;
-    font-size: 0.8rem;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.customer-display button:hover {
-    background-color: #4B5563; /* A slightly lighter grey for hover */
+/* NEW: Style for the action buttons' container */
+.customer-display-actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
 }
 
 .btn-assign {
-    width: 100%;
-    padding: 0.75rem;
-    background-color: transparent;
-    border: 1px dashed var(--border-color);
-    color: var(--text-secondary);
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
     cursor: pointer;
-    border-radius: 6px;
-    font-weight: 500;
-    transition: background-color 0.2s, border-color 0.2s, color 0.2s;
+    font-size: 1em;
+    width: 100%;
+    transition: background-color 0.2s ease;
 }
 
 .btn-assign:hover {
-    background-color: var(--background-secondary-light);
-    border-color: var(--accent-primary);
-    border-style: solid;
-    color: var(--text-primary);
+    background-color: #0056b3;
+}
+
+/* MODIFIED: Generic button styles for the two actions */
+.btn-change-customer,
+.btn-view-account {
+    flex-grow: 1; /* Make buttons share the space */
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+
+/* Specific style for the "Change" button */
+.btn-change-customer {
+    background-color: #6c757d;
+    color: white;
+}
+.btn-change-customer:hover {
+    background-color: #5a6268;
+}
+
+/* NEW: Style for the "View Account" button */
+.btn-view-account {
+    background-color: #28a745;
+    color: white;
+}
+.btn-view-account:hover {
+    background-color: #218838;
 }

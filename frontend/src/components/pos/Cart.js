@@ -1,9 +1,9 @@
-// components/pos/Cart.js
+// frontend/src/components/pos/Cart.js
 
-import React, { useContext, useState } from 'react';
-import { useAuth } from '../../context/useAuth';
+import React, { useEffect, useRef, useContext } from 'react';
+// THE ONLY CHANGE IS ON THIS NEXT LINE
+import { AuthContext } from '../../context/AuthContext'; // Corrected path from ../ to ../../
 
-// New props added: subtotalPreVat, totalVatAmount, grandTotal, vatRate
 const Cart = ({ 
     cartItems, 
     onRemoveFromCart, 
@@ -11,132 +11,104 @@ const Cart = ({
     onUpdatePrice, 
     onQuantityChange, 
     isBuyMode,
-    subtotalPreVat,    // NEW PROP
-    totalVatAmount,    // NEW PROP
-    grandTotal,        // NEW PROP
-    vatRate            // NEW PROP
+    subtotalPreVat,
+    totalVatAmount, 
+    grandTotal,     
+    vatRate         
 }) => {    
-    const { currentRole } = useAuth();
-    const [editingItemCartId, setEditingItemCartId] = useState(null);
-    const [newPrice, setNewPrice] = useState('');
+    const { selectedBusiness } = useContext(AuthContext);
+    const currentRole = selectedBusiness?.role_name;
 
-    // This function calculates the total based on the individual item prices and quantities
-    // It is primarily used for the individual item line totals and the 'buy' mode total.
-    // For 'sell' mode, the final grandTotal is passed as a prop from PosPage.js
-    const calculateTotal = () => {
-        return cartItems.reduce((total, item) => {
-            // Use the correct price based on the mode
-            const price = isBuyMode ? parseFloat(item.cost_price) : parseFloat(item.selling_price);
-            const quantity = parseFloat(item.quantity);
-            // Ensure calculation handles potential NaN from parseFloat
-            if (isNaN(price) || isNaN(quantity)) return total;
-            return total + price * quantity;
-        }, 0);
-    };
+    const prevCartLength = useRef(cartItems.length);
 
-    // Price overrides are only possible in Sell Mode by authorized users
+    useEffect(() => {
+        if (isBuyMode && cartItems.length > prevCartLength.current) {
+            const lastItem = cartItems[cartItems.length - 1];
+            if (lastItem) {
+                const inputElement = document.getElementById(`quantity-input-${lastItem.cartId}`);
+                if (inputElement) {
+                    inputElement.focus();
+                    inputElement.select();
+                }
+            }
+        }
+        prevCartLength.current = cartItems.length;
+    }, [cartItems, isBuyMode]);
+
     const canOverridePrice = !isBuyMode && (currentRole === 'Admin' || currentRole === 'Manager');
 
-    const handlePriceClick = (item) => {
-        if (!canOverridePrice) return;
-        setEditingItemCartId(item.cartId);
-        // Ensure newPrice is initialized with a number
-        setNewPrice(parseFloat(item.selling_price) || ''); 
-    };
-
-    const handlePriceChange = (e) => {
-        setNewPrice(e.target.value);
-    };
-
-    const handlePriceUpdate = (item) => {
-        const price = parseFloat(newPrice);
-        if (!isNaN(price) && price >= 0) {
-            onUpdatePrice(item.cartId, price);
-        }
-        setEditingItemCartId(null);
-        setNewPrice(''); // Clear newPrice state after update
+    const getItemTotal = (item) => {
+        const price = isBuyMode ? item.cost_price : item.selling_price;
+        return (parseFloat(price) * (parseFloat(item.quantity) || 0)).toFixed(2);
     };
     
-    const handleKeyPress = (e, item) => {
-        if (e.key === 'Enter') {
-            handlePriceUpdate(item);
+    const handlePriceClick = (item) => {
+        if (!canOverridePrice) return;
+        const newPriceStr = prompt("Enter new price:", item.selling_price);
+        if (newPriceStr !== null) {
+            const price = parseFloat(newPriceStr);
+            if (!isNaN(price) && price >= 0) {
+                onUpdatePrice(item.cartId, price);
+            }
         }
-    };
-
-    const getItemTotal = (item) => {
-        // Use the correct price for the line item total based on the mode
-        const price = isBuyMode ? item.cost_price : item.selling_price;
-        const quantity = parseFloat(item.quantity);
-        const calculatedPrice = parseFloat(price);
-
-        // Ensure calculation handles potential NaN
-        if (isNaN(calculatedPrice) || isNaN(quantity)) return '0.00';
-
-        return (calculatedPrice * quantity).toFixed(2);
     };
 
     return (
         <div className="cart">
             <h3>{isBuyMode ? 'Purchase Order' : 'Current Sale'}</h3>
             {cartItems.length === 0 ? (
-                <p>Cart is empty.</p>
+                <p className="cart-empty-message">Cart is empty.</p>
             ) : (
                 <ul className="cart-items">
                     {cartItems.map((item) => (
-                        <li key={item.cartId}>
+                        <li key={item.cartId} className={isBuyMode ? 'buy-mode-item' : ''}>
                             <span className="cart-item-name">{item.name}</span>
                             
                             {isBuyMode ? (
-                                <input
-                                    type="number"
-                                    step="0.01" // Allow decimal quantities/weights
-                                    value={parseFloat(item.quantity) || ''} // Ensure it's a number for input
-                                    onChange={(e) => onQuantityChange(item.cartId, e.target.value)}
-                                    className="quantity-input"
-                                    // autoFocus might cause issues if too many inputs. Consider carefully.
-                                    // autoFocus={item.cartId === cartItems[cartItems.length - 1]?.cartId} // Auto-focus last added item
-                                />
+                                <div className="quantity-control-wrapper">
+                                    <input
+                                        type="number"
+                                        id={`quantity-input-${item.cartId}`}
+                                        value={item.quantity}
+                                        onChange={(e) => onQuantityChange(item.cartId, e.target.value)}
+                                        className="quantity-input"
+                                        step="0.01"
+                                        min="0"
+                                    />
+                                    <input
+                                        type="range"
+                                        value={item.quantity}
+                                        onChange={(e) => onQuantityChange(item.cartId, e.target.value)}
+                                        className="quantity-slider"
+                                        min="0"
+                                        max="200"
+                                        step="0.1"
+                                    />
+                                </div>
                             ) : (
                                 <span className="cart-item-quantity">(x {item.quantity})</span>
                             )}
                             
-                            {/* Price display and override logic */}
-                            {editingItemCartId === item.cartId ? (
-                                <input
-                                    type="number"
-                                    step="0.01"
-                                    value={newPrice}
-                                    onChange={handlePriceChange}
-                                    onBlur={() => handlePriceUpdate(item)} // Update on blur
-                                    onKeyPress={(e) => handleKeyPress(e, item)}
-                                    className="price-input-override"
-                                    autoFocus // Auto-focus when in editing mode
-                                />
-                            ) : (
-                                <span className={canOverridePrice ? 'price-editable' : ''} onClick={() => handlePriceClick(item)}>
-                                    R {getItemTotal(item)}
-                                </span>
-                            )}
+                            <span className={canOverridePrice ? 'price-editable' : ''} onClick={() => handlePriceClick(item)}>
+                                R {getItemTotal(item)}
+                            </span>
                             
-                            <button onClick={() => onRemoveFromCart(item)}>×</button>
+                            <button className="remove-item-btn" onClick={() => onRemoveFromCart(item)}>×</button>
                         </li>
                     ))}
                 </ul>
             )}
 
-            <div className="cart-total">
-                {/* Conditional display for VAT breakdown in 'sell' mode */}
-                {!isBuyMode && (
+            <div className="cart-summary">
+                {!isBuyMode ? (
                     <>
                         <p>Subtotal (Excl. VAT): R {subtotalPreVat.toFixed(2)}</p>
                         <p>VAT ({Math.round(vatRate * 100)}%): R {totalVatAmount.toFixed(2)}</p>
                         <hr />
                         <strong>Total: R {grandTotal.toFixed(2)}</strong>
                     </>
-                )}
-                {/* Display for 'buy' mode (simple total) */}
-                {isBuyMode && (
-                    <strong>Total Payout: R {calculateTotal().toFixed(2)}</strong>
+                ) : (
+                    <strong>Total Payout: R {subtotalPreVat.toFixed(2)}</strong>
                 )}
             </div>
             <button 

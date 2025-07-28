@@ -1,596 +1,205 @@
 /* frontend/src/components/pos/Pos.css */
 
-/* --- ADD THIS LINE AT THE VERY TOP --- */
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
-/* ------------------------------------- */
 
 /* --- General & Root Layout Styling --- */
 body {
-    font-family: 'Lato', sans-serif; /* Apply the new font globally */
+    font-family: 'Lato', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #2e3a4e; /* Deeper dark blue for the overall app background */
-    color: #f0f0f0; /* Light text for readability */
-    height: 100vh; /* Ensure body takes full viewport height */
-    overflow: hidden; /* Prevent default scrollbars on body */
+    background-color: #2e3a4e;
+    color: #f0f0f0;
+    height: 100vh;
+    overflow: hidden;
 }
 
-/* Outer wrapper for the entire POS page content */
 .pos-page-wrapper {
     display: flex;
     flex-direction: column;
-    height: 100vh; /* Takes full height of its parent (body) */
-    padding: 20px; /* Overall padding for the POS interface */
-    box-sizing: border-box; /* Include padding in height calculation */
+    height: 100%;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
-/* Header row for title and mode selector */
 .pos-page-header-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-shrink: 0;
 }
 
 .pos-page-header-row h1 {
-    color: #ffffff; /* White title */
-    margin: 0; /* Remove default margin */
-    font-weight: 700; /* Bold Lato */
-    font-size: 2.2em; /* Adjust size as needed */
-}
-
-/* Mode Selector (Sell, Buy, Expense buttons) */
-.mode-selector {
-    display: flex;
-    gap: 10px;
-}
-
-.mode-selector button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px; /* Rounded corners */
-    background-color: #4a5a70; /* Slightly lighter dark for inactive buttons */
-    color: #f0f0f0;
-    font-size: 1em;
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    font-weight: 600; /* Medium-bold for readability */
-}
-
-.mode-selector button:hover {
-    background-color: #5a6b80;
-}
-
-.mode-selector button.active {
-    background-color: #007bff; /* Bright blue for active mode */
+    color: #ffffff;
+    margin: 0;
     font-weight: 700;
-    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.4); /* Subtle glow for active */
-}
-
-/* Alert Messages (Error and Success) */
-.alert-error {
-    background-color: #dc3545; /* Red background */
-    color: white;
-    padding: 10px 15px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    font-weight: 600;
-}
-
-.alert-success {
-    background-color: #28a745; /* Green background */
-    color: white;
-    padding: 10px 15px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: 600;
-}
-
-.alert-success .btn-print {
-    background-color: #1a6f2c; /* Darker green for print button */
-    color: white;
-    padding: 8px 15px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9em;
-    text-decoration: none; /* Remove underline for links */
-    transition: background-color 0.2s ease;
-}
-
-.alert-success .btn-print:hover {
-    background-color: #165b24;
+    font-size: 2.2em;
 }
 
 /* --- PosLayout Grid Structure --- */
 .pos-main-grid-layout {
     display: grid;
-    /* Define grid columns: 250px for left, 1fr for middle (takes remaining), 300px for right */
-    grid-template-columns: 250px 1fr 300px;
-    gap: 20px; /* Space between grid columns */
-    flex-grow: 1; /* Allows the grid to take all available height */
-    overflow: hidden; /* Prevent this container from scrolling, panels will handle their own */
-    box-sizing: border-box;
-}
-
-/* Generic Panel Styling (applied to all three main sections) */
-.pos-panel {
-    background-color: #38455e; /* Slightly lighter dark for panels to create depth */
-    border-radius: 8px; /* Rounded corners for panels */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Soft, subtle shadow instead of hard border */
-    padding: 20px;
-    display: flex; /* Use flex for internal layout within each panel */
-    flex-direction: column; /* Stack content vertically inside panels */
-    box-sizing: border-box;
+    grid-template-columns: 1fr 350px;
+    gap: 20px;
+    flex-grow: 1;
+    height: 100%;
     min-height: 0;
-    min-width: 0; /* Important for flex/grid items */
+    box-sizing: border-box;
 }
 
-/* --- Product Type Sidebar Specifics (Left Panel) --- */
-/* This targets the outer div of the sidebar (now ProductTypeSidebar) */
-.category-sidebar-panel { 
-    /* No additional styles needed here if .pos-panel covers it */
+/* --- Generic Panel Styling --- */
+.pos-panel {
+    background-color: #38455e;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    overflow: hidden;
 }
 
-/* Styles for ProductTypeSidebar component itself */
-.category-sidebar h3 { /* The h3 inside ProductTypeSidebar */
-    color: #ffffff;
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.2em;
-    font-weight: 700;
-}
-
-.category-sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.category-sidebar li {
-    padding: 12px 15px;
-    margin-bottom: 5px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s ease, color 0.2s ease;
-    font-weight: 400; /* Regular Lato */
-    color: #e0e0e0;
-}
-
-.category-sidebar li:hover {
-    background-color: #4a5a70;
-}
-
-.category-sidebar li.selected {
-    background-color: #007bff; /* Active blue */
-    color: white;
-    font-weight: 700; /* Bold Lato for selected */
-    box-shadow: 0 2px 8px rgba(0, 123, 255, 0.4);
-}
-
-/* --- Main Product Panel Specifics --- */
+/* --- Main Product Panel - Internal Layout --- */
 .main-product-panel {
-    /* No additional styles needed here if .pos-panel covers it */
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
 }
 
-/* Search Bar Specifics (should be within SearchBar.js's CSS if separate, otherwise here) */
-.search-bar-container { /* Assuming this wraps the search input */
-    margin-bottom: 20px; /* Space below search bar */
+.pos-controls-wrapper {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-shrink: 0;
+}
+.pos-controls-wrapper .search-bar-container {
+    flex-grow: 1;
+    margin-bottom: 0;
 }
 
 .search-bar-input {
     width: 100%;
     padding: 12px 15px;
-    border: 1px solid #5a6b80; /* Subtle border for input */
-    border-radius: 5px; /* Rounded input field */
-    background-color: #4a5a70; /* Darker input background */
-    color: #f0f0f0;
-    font-size: 1.1em;
-    outline: none; /* Remove default outline */
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.search-bar-input::placeholder {
-    color: #a0a0a0;
-}
-
-.search-bar-input:focus {
-    border-color: #007bff; /* Highlight on focus */
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3); /* Soft blue glow */
-}
-
-/* Product List Area & Product Cards */
-.product-list-area {
-    flex-grow: 1; /* Allow product list to take available space */
-    overflow-y: auto; /* Enable scrolling for products */
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* Responsive grid */
-    gap: 15px; /* Space between product cards */
-}
-
-.product-card {
-    background-color: #4a5a70; /* Slightly lighter background than panel for cards */
-    border-radius: 8px; /* Rounded corners for cards */
-    padding: 15px;
-    text-align: center;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow for cards */
-    display: flex; /* Flexbox for internal card layout */
-    flex-direction: column;
-    justify-content: space-between;
-    min-height: 120px; /* Ensure consistent card height */
-    box-sizing: border-box;
-}
-
-.product-card:hover {
-    transform: translateY(-3px); /* Slight lift on hover */
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
-    background-color: #5a6b80;
-}
-
-.product-card-name {
-    font-size: 1.1em;
-    font-weight: 700; /* Bold product name */
-    color: #ffffff;
-    margin-bottom: 5px;
-}
-
-.product-card-sku {
-    font-size: 0.85em;
-    color: #a0a0a0;
-    margin-bottom: 10px;
-}
-
-.product-card-price {
-    font-size: 1.3em;
-    font-weight: 900; /* Extra bold price */
-    color: #72b2ff; /* A bright, distinct blue for price */
-    margin-top: auto; /* Push price to the bottom */
-}
-
-/* --- Cart & Customer Panel Specifics (Right Panel) --- */
-.cart-customer-panel {
-    /* No additional styles needed here if .pos-panel covers it */
-}
-
-/* Customer Select Specifics */
-.customer-select-container { /* Assuming this wraps the customer select UI */
-    text-align: center;
-    margin-bottom: 20px; /* Space between customer select and cart */
-    background-color: #4a5a70; /* Slightly different background for visual separation */
-    padding: 15px;
-    border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-.customer-select-container h3 {
-    color: #ffffff;
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.2em;
-}
-
-.assign-customer-button {
-    background-color: #007bff;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1em;
-    transition: background-color 0.2s ease;
-}
-
-.assign-customer-button:hover {
-    background-color: #0056b3;
-}
-
-.selected-customer-info {
-    font-size: 1.1em;
-    font-weight: 600;
-    color: #fff;
-    margin-bottom: 10px;
-}
-
-.clear-customer-button {
-    background: none;
-    border: 1px solid #dc3545;
-    color: #dc3545;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85em;
-    transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-.clear-customer-button:hover {
-    background-color: #dc3545;
-    color: white;
-}
-
-/* Payout Source Selector (for 'buy' mode) */
-.payout-source-selector {
-    margin-bottom: 20px;
-    background-color: #4a5a70;
-    padding: 15px;
-    border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-}
-
-.payout-source-selector h4 {
-    margin-top: 0;
-    margin-bottom: 10px;
-    color: #ffffff;
-    font-size: 1.1em;
-    font-weight: 600;
-}
-
-/* --- Cart Specifics (Cart.js component) --- */
-.cart { /* The main div inside Cart.js */
-    flex-grow: 1; 
-    display: flex;
-    flex-direction: column;
-}
-
-.cart h3 {
-    color: #ffffff;
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.2em;
-    font-weight: 700;
-    text-align: center;
-}
-
-.cart-items { /* The ul for cart items */
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    flex-grow: 1; 
-    overflow-y: auto;
-    margin-bottom: 15px;
-    max-height: calc(100vh - 400px); 
-}
-
-.cart-items li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.08); 
-    color: #e0e0e0;
-}
-
-.cart-items li:last-child {
-    border-bottom: none;
-}
-
-.cart-item-name {
-    flex-grow: 1;
-    margin-right: 10px;
-    font-weight: 600;
-}
-
-.cart-item-quantity {
-    min-width: 50px;
-    text-align: right;
-    margin-right: 10px;
-    color: #b0b0b0;
-}
-
-.quantity-input {
-    width: 60px;
-    padding: 6px;
-    border: 1px solid #5a6b80;
-    border-radius: 4px;
-    background-color: #4a5a70;
-    color: #f0f0f0;
-    text-align: center;
-    margin-right: 10px;
-    font-size: 0.9em;
-}
-
-.price-editable {
-    cursor: pointer;
-    text-decoration: underline;
-    color: #72b2ff; 
-    font-weight: 700;
-}
-
-.price-input-override {
-    width: 80px;
-    padding: 6px;
-    border: 1px solid #007bff;
-    border-radius: 4px;
-    background-color: #4a5a70;
-    color: #f0f0f0;
-    text-align: right;
-    font-size: 0.9em;
-}
-
-.remove-item-btn {
-    background: none;
-    border: none;
-    color: #dc3545; 
-    font-size: 1.5em;
-    cursor: pointer;
-    margin-left: 10px;
-    padding: 0 5px;
-    line-height: 1;
-    transition: color 0.2s ease;
-}
-
-.remove-item-btn:hover {
-    color: #ff6677;
-}
-
-.cart-summary { 
-    padding-top: 15px;
-    border-top: 1px solid rgba(255,255,255,0.12); 
-    text-align: right;
-    font-size: 1.1em;
-    font-weight: 600;
-    color: #e0e0e0;
-    margin-top: auto; 
-}
-
-.cart-summary p {
-    margin: 5px 0;
-}
-
-.cart-summary hr {
-    border: none;
-    border-top: 1px dashed rgba(255,255,255,0.1); 
-    margin: 10px 0;
-}
-
-.cart-summary strong {
-    font-size: 1.3em;
-    color: #ffffff;
-    font-weight: 900; 
-}
-
-/* Process Sale/Payout Buttons */
-.btn-process-sale, .btn-buy {
-    width: 100%;
-    padding: 15px;
-    background-color: #28a745; 
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1.2em;
-    margin-top: 20px;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-    font-weight: 700;
-    box-shadow: 0 3px 10px rgba(40, 167, 69, 0.4);
-}
-
-.btn-buy { 
-    background-color: #ffc107; 
-    color: #333;
-    box-shadow: 0 3px 10px rgba(255, 193, 7, 0.4);
-}
-
-.btn-process-sale:hover { background-color: #218838; }
-.btn-buy:hover { background-color: #e0a800; }
-
-.btn-process-sale:disabled, .btn-buy:disabled {
-    background-color: #6c757d; 
-    cursor: not-allowed;
-    box-shadow: none;
-}
-
-/* --- Expense Form Specifics (when mode is 'expense') --- */
-.expense-form-container {
-    background-color: #38455e;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-    padding: 30px;
-    max-width: 500px; 
-    margin: 50px auto; 
-    color: #f0f0f0;
-    box-sizing: border-box;
-}
-
-.expense-form-container h3 {
-    text-align: center;
-    color: #ffffff;
-    margin-top: 0;
-    margin-bottom: 25px;
-    font-size: 1.4em;
-    font-weight: 700;
-}
-
-.form-group {
-    margin-bottom: 20px;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #e0e0e0;
-}
-
-.form-control { 
-    width: calc(100% - 20px); 
-    padding: 10px;
     border: 1px solid #5a6b80;
     border-radius: 5px;
     background-color: #4a5a70;
     color: #f0f0f0;
-    font-size: 1em;
+    font-size: 1.1em;
     outline: none;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-sizing: border-box;
+}
+.search-bar-input::placeholder { color: #a0a0a0; }
+.search-bar-input:focus { border-color: #007bff; box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3); }
+
+
+/* --- NEW IMAGE GRID STYLES --- */
+.product-list-area {
+    overflow-y: auto;
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    padding: 5px;
 }
 
-.form-control:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
-}
-
-.btn-log-expense {
-    width: 100%;
-    padding: 12px;
-    background-color: #17a2b8; 
-    color: white;
-    border: none;
-    border-radius: 5px;
+.image-product-card {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    background-size: cover;
+    background-position: center;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 1.1em;
-    margin-top: 15px;
-    transition: background-color 0.2s ease;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid transparent;
+}
+.image-product-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    border-color: rgba(255, 255, 255, 0.5);
+}
+
+.card-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 10px;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0) 100%);
+    color: white;
+    text-align: center;
+}
+
+.card-product-name {
+    font-size: 0.9em;
     font-weight: 600;
-    box-shadow: 0 3px 10px rgba(23, 162, 184, 0.4);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.btn-log-expense:hover {
-    background-color: #138496;
+.card-product-price {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: #e0e0e0;
+}
+.card-product-price.custom {
+    color: #ffc107;
+    font-weight: 900;
 }
 
-/* --- Responsive Adjustments --- */
-@media (max-width: 1024px) {
-    .pos-main-grid-layout {
-        grid-template-columns: 200px 1fr 280px; 
-        gap: 15px;
-    }
-    .pos-panel {
-        padding: 15px;
-    }
-    .product-list-area {
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 10px;
-    }
-}
+/* --- Category Dropdown, Supplier & Cart Styles --- */
+.pos-category-dropdown-wrapper { position: relative; width: 250px; flex-shrink: 0; }
+.pos-category-dropdown-wrapper .dropdown-toggle { width: 100%; padding: 12px 15px; background-color: #4a5a70; color: #f0f0f0; border: 1px solid #5a6b80; border-radius: 5px; font-size: 1em; cursor: pointer; display: flex; justify-content: space-between; align-items: center; text-align: left; }
+.pos-category-dropdown-wrapper .arrow { border: solid #f0f0f0; border-width: 0 2px 2px 0; display: inline-block; padding: 3px; transition: transform 0.2s ease; }
+.pos-category-dropdown-wrapper .arrow.down { transform: rotate(45deg); }
+.pos-category-dropdown-wrapper .arrow.up { transform: rotate(-135deg); }
+.pos-category-dropdown-wrapper .dropdown-menu { position: absolute; top: 105%; left: 0; width: 100%; background-color: #38455e; border: 1px solid #5a6b80; border-radius: 5px; box-shadow: 0 8px 16px rgba(0,0,0,0.3); z-index: 1000; }
+.pos-category-dropdown-wrapper .dropdown-item { padding: 12px 15px; color: #d1d5db; cursor: pointer; }
+.pos-category-dropdown-wrapper .dropdown-item:hover { background-color: #4a5a70; }
+.pos-category-dropdown-wrapper .dropdown-item.favourite { font-weight: 700; color: #ffc107; }
 
-@media (max-width: 768px) {
-    .pos-main-grid-layout {
-        grid-template-columns: 1fr; 
-        grid-auto-rows: min-content; 
-        gap: 15px;
-    }
-    .pos-page-header-row {
-        flex-direction: column;
-        align-items: flex-start;
-        margin-bottom: 15px;
-    }
-    .mode-selector {
-        width: 100%;
-        justify-content: stretch;
-        margin-top: 15px;
-    }
-    .mode-selector button {
-        flex-grow: 1;
-    }
-    .cart-items {
-        max-height: 300px; 
-    }
-    .expense-form-container {
-        margin: 20px auto;
-        padding: 20px;
-    }
-}
+.loading-or-empty-message { text-align: center; color: #9ca3af; margin: 40px auto; }
+
+.cart-customer-panel { padding: 20px; }
+.customer-select-container, .payout-source-selector { text-align: center; margin-bottom: 20px; background-color: #4a5a70; padding: 15px; border-radius: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); flex-shrink: 0; }
+.payout-source-selector h4 { margin: 0 0 10px 0; }
+
+.cart { flex-grow: 1; display: flex; flex-direction: column; min-height: 0; }
+.cart h3 { color: #ffffff; margin-top: 0; margin-bottom: 15px; font-size: 1.2em; font-weight: 700; text-align: center; flex-shrink: 0; }
+.cart-empty-message { text-align: center; color: #9ca3af; margin: auto; }
+
+.cart-items { list-style: none; padding: 0; margin: 0; flex-grow: 1; overflow-y: auto; margin-bottom: 15px; }
+.cart-items li { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.08); gap: 10px; }
+.cart-items li:last-child { border-bottom: none; }
+.cart-items li.buy-mode-item { flex-wrap: wrap; }
+.cart-item-name { flex-grow: 1; font-weight: 600; }
+.cart-item-quantity { min-width: 50px; text-align: right; color: #b0b0b0; }
+.remove-item-btn { background: none; border: none; color: #dc3545; font-size: 1.5em; cursor: pointer; padding: 0 5px; line-height: 1; }
+.price-editable { cursor: pointer; text-decoration: underline; text-decoration-style: dotted; color: #72b2ff; font-weight: 700; }
+.price-input-override { width: 80px; padding: 6px; border: 1px solid #007bff; border-radius: 4px; background-color: #2e3a4e; color: #f0f0f0; text-align: right; font-size: 1em; font-weight: 700; -moz-appearance: textfield; }
+.price-input-override::-webkit-outer-spin-button, .price-input-override::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.quantity-control-wrapper { display: flex; flex-direction: column; align-items: center; flex-basis: 100%; margin: 5px 0; }
+.quantity-input { width: 80px; padding: 8px; border: 1px solid #5a6b80; border-radius: 4px; background-color: #4a5a70; color: #f0f0f0; text-align: center; font-size: 1.1em; font-weight: 700; margin-bottom: 8px; -moz-appearance: textfield; }
+.quantity-input::-webkit-outer-spin-button, .quantity-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.quantity-slider { width: 100%; -webkit-appearance: none; appearance: none; height: 8px; background: #4a5a70; border-radius: 5px; outline: none; opacity: 0.7; transition: opacity .2s; }
+.quantity-slider:hover { opacity: 1; }
+.quantity-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; background: #007bff; border-radius: 50%; cursor: pointer; }
+.quantity-slider::-moz-range-thumb { width: 20px; height: 20px; background: #007bff; border-radius: 50%; cursor: pointer; }
+.cart-summary { padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.12); text-align: right; font-size: 1.1em; font-weight: 600; color: #e0e0e0; margin-top: auto; flex-shrink: 0; }
+.cart-summary hr { border: none; border-top: 1px dashed rgba(255,255,255,0.1); margin: 10px 0; }
+.cart-summary strong { font-size: 1.3em; color: #ffffff; font-weight: 900; }
+.btn-process-sale, .btn-buy { width: 100%; padding: 15px; background-color: #28a745; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 1.2em; margin-top: 20px; transition: background-color 0.2s ease, transform 0.1s ease; font-weight: 700; box-shadow: 0 3px 10px rgba(40, 167, 69, 0.4); }
+.btn-buy { background-color: #ffc107; color: #333; box-shadow: 0 3px 10px rgba(255, 193, 7, 0.4); }
+.btn-process-sale:hover { background-color: #218838; }
+.btn-buy:hover { background-color: #e0a800; }
+.btn-process-sale:disabled, .btn-buy:disabled { background-color: #6c757d; cursor: not-allowed; box-shadow: none; }
+.mode-selector { display: flex; gap: 10px; }
+.mode-selector button { padding: 10px 20px; border: none; border-radius: 5px; background-color: #4a5a70; color: #f0f0f0; font-size: 1em; cursor: pointer; transition: background-color 0.2s ease, transform 0.1s ease; font-weight: 600; }
+.mode-selector button:hover { background-color: #5a6b80; }
+.mode-selector button.active { background-color: #007bff; font-weight: 700; box-shadow: 0 2px 8px rgba(0, 123, 255, 0.4); }
+.alert-error { background-color: #dc3545; color: white; padding: 10px 15px; border-radius: 5px; margin-bottom: 20px; font-weight: 600; }
+.alert-success { background-color: #28a745; color: white; padding: 10px 15px; border-radius: 5px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
+.alert-success .btn-print { background-color: #1a6f2c; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; text-decoration: none; transition: background-color 0.2s ease; }
+.alert-success .btn-print:hover { background-color: #165b24; }

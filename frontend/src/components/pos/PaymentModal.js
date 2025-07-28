@@ -1,46 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import api from '../../services/api';
+// frontend/src/components/pos/PaymentModal.js
+
+import React from 'react';
 import './PaymentModal.css';
 
-const PaymentModal = ({ totalAmount, onProcessPayment, onProcessAccountCharge, onClose, selectedCustomer }) => {
-    const [terminals, setTerminals] = useState([]);
-    const [safes, setSafes] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const [terminalsRes, safesRes] = await Promise.all([
-                    api.get('/terminals'),
-                    api.get('/cash/safes')
-                ]);
-                setTerminals(terminalsRes.data);
-                setSafes(safesRes.data);
-            } catch (error) {
-                console.error("Failed to fetch payment options", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchData();
-    }, []);
+// The component now only receives `safes` as a prop for payment options
+const PaymentModal = ({ totalAmount, onProcessPayment, onProcessAccountCharge, onClose, selectedCustomer, safes }) => {
 
     const handlePayment = (paymentData) => {
         onProcessPayment(paymentData);
     };
     
-    const mainTill = safes.find(s => s.name === 'Main Paintshop Till');
-    const nedbankAccount = safes.find(s => s.name === 'Nedbank Account');
-    const capitecAccount = safes.find(s => s.name === 'Capitec Account');
-    const nedbankTerminal = terminals.find(t => t.name === 'Nedbank Speedpoint');
-    const capitecTerminal = terminals.find(t => t.name === 'Capitec Speedpoint');
+    // Dynamically separate safes into physical tills and bank accounts
+    const physicalTills = safes.filter(s => s.is_physical_cash === true);
+    const bankAccounts = safes.filter(s => s.is_physical_cash === false);
 
     const canChargeToCustomerAccount = selectedCustomer && selectedCustomer.id;
-
-    if (loading) {
-        return <p>Loading payment options...</p>;
-    }
 
     return (
         <div className="payment-modal">
@@ -55,55 +29,45 @@ const PaymentModal = ({ totalAmount, onProcessPayment, onProcessAccountCharge, o
                     className="btn-payment account" 
                     onClick={() => handlePayment({ method: 'ON_ACCOUNT' })}
                     disabled={!canChargeToCustomerAccount}
-                    title={!canChargeToCustomerAccount ? "Assign a customer to the sale first" : "Charge this sale to the selected customer's account"}
+                    title={!canChargeToCustomerAccount ? "Assign a customer to the sale first" : ""}
                 >
                     Charge to Customer Account
                 </button>
-
                 <button className="btn-payment account" onClick={onProcessAccountCharge}>
                     Charge to Business Account
                 </button>
-                <hr style={{margin: '0.5rem 0'}}/>
+                <hr className="payment-divider"/>
 
-                {mainTill && (
-                    <button className="btn-payment cash" onClick={() => handlePayment({ method: 'CASH', safe_id: mainTill.id })}>
-                        Cash (to Main Till)
-                    </button>
-                )}
-                
-                {nedbankAccount && nedbankTerminal && (
+                <h4>Cash:</h4>
+                {physicalTills.map(till => (
                     <button 
-                        className="btn-payment card-nedbank"
-                        onClick={() => handlePayment({ method: 'CARD', safe_id: nedbankAccount.id, terminal_name: nedbankTerminal.name })}
+                        key={`cash-${till.id}`}
+                        className="btn-payment cash" 
+                        onClick={() => handlePayment({ method: 'CASH', safe_id: till.id })}
                     >
-                        Nedbank Speedpoint
+                        Cash (to {till.name})
                     </button>
-                )}
-                {nedbankAccount && (
-                     <button 
-                        className="btn-payment eft-nedbank"
-                        onClick={() => handlePayment({ method: 'EFT', safe_id: nedbankAccount.id, terminal_name: 'Nedbank EFT' })}
-                    >
-                        EFT (to Nedbank)
-                    </button>
-                )}
+                ))}
 
-                {capitecAccount && capitecTerminal && (
-                    <button 
-                        className="btn-payment card-capitec"
-                        onClick={() => handlePayment({ method: 'CARD', safe_id: capitecAccount.id, terminal_name: capitecTerminal.name })}
-                    >
-                        Capitec Speedpoint
-                    </button>
-                )}
-                {capitecAccount && (
-                     <button 
-                        className="btn-payment eft-capitec"
-                        onClick={() => handlePayment({ method: 'EFT', safe_id: capitecAccount.id, terminal_name: 'Capitec EFT' })}
-                    >
-                        EFT (to Capitec)
-                    </button>
-                )}
+                {/* Render Card & EFT options for EVERY bank account */}
+                {bankAccounts.map(account => (
+                    <React.Fragment key={`account-${account.id}`}>
+                        <h4>{account.name}:</h4>
+                        <button
+                            className="btn-payment card-generic"
+                            onClick={() => handlePayment({ method: 'CARD', safe_id: account.id, terminal_name: `${account.name} Card` })}
+                        >
+                            Card (to {account.name})
+                        </button>
+                        <button
+                            className="btn-payment eft-generic"
+                            onClick={() => handlePayment({ method: 'EFT', safe_id: account.id, terminal_name: `${account.name} EFT` })}
+                        >
+                            EFT (to {account.name})
+                        </button>
+                    </React.Fragment>
+                ))}
+
             </div>
             <button onClick={onClose} className="btn-close-modal">Cancel</button>
         </div>

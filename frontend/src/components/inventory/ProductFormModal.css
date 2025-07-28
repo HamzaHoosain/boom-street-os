@@ -1,0 +1,77 @@
+/* frontend/src/components/inventory/ProductFormModal.css */
+
+.product-form {
+    padding: 10px;
+    color: #333;
+    min-width: 500px; /* Give the modal form a decent width */
+}
+
+.form-group {
+    margin-bottom: 1.2rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #444;
+}
+
+.form-control {
+    width: 100%; /* Take full width of parent */
+    box-sizing: border-box; /* Include padding in width */
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1em;
+}
+
+.form-group small {
+    display: block;
+    margin-top: 5px;
+    color: #666;
+    font-size: 0.85em;
+}
+
+.form-group-row {
+    display: flex;
+    gap: 20px;
+}
+.form-group-row .form-group {
+    flex: 1;
+}
+
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+}
+
+.btn-cancel, .btn-save {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-cancel {
+    background-color: #6c757d;
+    color: white;
+}
+.btn-cancel:hover {
+    background-color: #5a6268;
+}
+
+.btn-save {
+    background-color: #28a745;
+    color: white;
+}
+.btn-save:hover {
+    background-color: #218838;
+}

@@ -1,35 +1,20 @@
-// frontend/src/components/layout/Sidebar.js - FINAL WITH TRANSACTION HISTORY
-import React from 'react';
-import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/useAuth';
+// frontend/src/components/layout/Sidebar.js
+
+import React, { useContext } from 'react';
+import { NavLink } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 import './Sidebar.css';
 
-// Define which roles can see which pages
-const pagePermissions = {
-    '/pos': ['Admin', 'Manager', 'POS Clerk', 'Salesperson', 'General Staff', 'Buyer'],
-    '/transactions': ['Admin', 'Manager'], // <-- 1. RENAMED FROM '/sales-history'
-    // '/expenses' has been removed
-     '/expenses': ['Admin', 'Manager'],
-     '/employees': ['Admin', 'Manager'],
-    '/inventory': ['Admin', 'Manager', 'Buyer'],
-    '/customers': ['Admin', 'Manager', 'POS Clerk', 'Salesperson'],
-    '/panel-beating': ['Admin', 'Manager', 'General Staff'],
-    '/suppliers': ['Admin', 'Manager', 'Buyer'],
-    '/scrapyard': ['Admin', 'Manager', 'Buyer'],
-    '/logistics': ['Admin', 'Manager'],
-    '/cash-management': ['Admin', 'Manager'],
-    '/payroll': ['Admin', 'Manager'],
-    '/reports': ['Admin', 'Manager']
-};
-
 const Sidebar = () => {
-    const { currentRole, isSuperAdmin } = useAuth();
+    const { selectedBusiness } = useContext(AuthContext); // Use context to get the active business
 
-    const canView = (path) => {
-        if (isSuperAdmin) return true;
-        if (!pagePermissions[path]) return true;
-        return pagePermissions[path].includes(currentRole);
-    };
+    // Determine the type of the active business
+    const isRetail = selectedBusiness?.type?.includes('Retail');
+    const isScrapyard = selectedBusiness?.type === 'Bulk Inventory';
+
+    // In a real-world scenario, you might get the user's role from the context as well
+    // const currentRole = selectedBusiness?.role_name; 
+    // For now, we'll assume the user can see all links for their business type
 
     return (
         <div className="sidebar">
@@ -37,24 +22,43 @@ const Sidebar = () => {
                 <h3>Boom Street OS</h3>
             </div>
           
+            <ul className="sidebar-menu">
+                {/* Common Links */}
+                <li><NavLink to="/">Dashboard</NavLink></li>
+                <li><NavLink to="/pos">POS Terminal</NavLink></li>
+                <li><NavLink to="/transactions">Transaction History</NavLink></li>
+                
+                {/* Inventory Link */}
+                <li><NavLink to="/inventory">Inventory</NavLink></li>
+                <li><NavLink to="/stocktake">Stock Take</NavLink></li>
 
-<ul className="sidebar-menu">
-    <li><Link to="/">Dashboard</Link></li>
-    {canView('/pos') && <li><Link to="/pos">POS Terminal</Link></li>} {/* Renamed for clarity */}
-    {canView('/transactions') && <li><Link to="/transactions">Transaction History</Link></li>}
-    {canView('/inventory') && <li><Link to="/inventory">Inventory</Link></li>}
-    {canView('/scrapyard') && <li><Link to="/scrapyard">Bulk Sales</Link></li>}
-    {canView('/customers') && <li><Link to="/customers">Customers</Link></li>}
-    
-    {/* --- NEW AND UPDATED LINKS --- */}
-    {canView('/bulk-buyers') && <li><Link to="/bulk-buyers">Bulk Buyers</Link></li>}
-    {canView('/suppliers') && <li><Link to="/suppliers">Product Suppliers</Link></li>}
-    {canView('/employees') && <li><Link to="/employees">Employees</Link></li>}
-    { canView('/payroll') && <li><Link to="/payroll">Payroll</Link></li>}
-    {canView('/logistics') && <li><Link to="/logistics">Logistics</Link></li>}
-    {canView('/cash-management') && <li><Link to="/cash-management">Cash Management</Link></li>}
-    {canView('/reports') && <li><Link to="/reports">Reports</Link></li>}
-</ul>
+                {/* --- CONTEXT-AWARE LINKS --- */}
+
+                {/* Retail-Specific Links */}
+                {isRetail && (
+                    <>
+                        <li><NavLink to="/customers">Customers</NavLink></li>
+                        {/* You can add more retail-only links here, like Panel Beating */}
+                        {/* <li><NavLink to="/panel-beating">Panel Beating</NavLink></li> */}
+                    </>
+                )}
+
+                {/* Scrapyard-Specific Links */}
+                {isScrapyard && (
+                    <>
+                        <li><NavLink to="/bulk-buyers">Bulk Buyers</NavLink></li>
+                    </>
+                )}
+                
+                {/* --- END OF CONTEXT-AWARE LINKS --- */}
+                
+                {/* Common Links for both business types */}
+                <li><NavLink to="/suppliers">Product Suppliers</NavLink></li>
+                <li><NavLink to="/employees">Employees</NavLink></li>
+                <li><NavLink to="/payroll">Payroll</NavLink></li>
+                <li><NavLink to="/cash-management">Cash Management</NavLink></li>
+                <li><NavLink to="/reports">Reports</NavLink></li>
+            </ul>
         </div>
     );
 }
