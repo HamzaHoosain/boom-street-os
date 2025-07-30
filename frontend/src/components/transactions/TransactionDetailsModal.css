@@ -1,0 +1,72 @@
+/* frontend/src/components/transactions/TransactionDetailsModal.css */
+
+.transaction-details-content {
+    padding: 10px;
+    font-size: 1.1em;
+}
+
+.details-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+}
+
+.details-header > div:first-child {
+    line-height: 1.5;
+}
+
+.details-amount {
+    font-size: 1.5em;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.details-amount.income {
+    color: #28a745;
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+.details-amount.expense {
+    color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.details-body {
+    padding-top: 15px;
+}
+
+.details-body h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+}
+.details-body h5 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #555;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.details-body p {
+    margin: 5px 0;
+}
+
+.details-list {
+    list-style: disc;
+    padding-left: 20px;
+}
+.details-list li {
+    margin-bottom: 8px;
+}
+
+.alert-error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    padding: 10px 15px;
+    border: 1px solid transparent;
+    border-radius: 4px;
+}

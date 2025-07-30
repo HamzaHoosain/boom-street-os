@@ -521,6 +521,8 @@ const PosPage = () => {
                 </div>
             </div>
             {error && <p className="alert-error">{error}</p>}
+            
+            {/* --- REPLACE THIS ENTIRE `success && (...)` BLOCK --- */}
             {success && (
                 <div className="alert-success">
                     <span>{success}</span>
@@ -531,6 +533,7 @@ const PosPage = () => {
                             Print Invoice
                         </a>
                     )}
+                    {/* THIS WAS THE MISSING LINE */}
                     {lastPurchaseId && (
                         <a href={`/remittance/${lastPurchaseId}`} target="_blank" rel="noopener noreferrer" className="btn-print">
                             Print Remittance

@@ -4,61 +4,13 @@ import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import Modal from '../components/layout/Modal';
-import './TransactionHistoryPage.css'; // New CSS file for this page
+import TransactionDetailsModal from '../components/transactions/TransactionDetailsModal';
+import './TransactionHistoryPage.css';
 
-// --- NEW: Child component for the Details Modal ---
-const TransactionDetailsModal = ({ transaction, details, onClose }) => {
-    // A simple, readable display for the rich data from the drill-down API
-    return (
-        <div>
-            <h3>Details for Transaction #{transaction.id}</h3>
-            <p><strong>Type:</strong> {details.type}</p>
-            <p><strong>Description:</strong> {transaction.description}</p>
-            <hr />
-            {details.type === 'Sale' && (
-                <div>
-                    <h4>Sale Details</h4>
-                    <p><strong>Customer:</strong> {details.customer_name || 'Cash Sale'}</p>
-                    <p><strong>Total Amount:</strong> R{parseFloat(details.total_amount).toFixed(2)}</p>
-                    <p><strong>Payment Method:</strong> {details.payment_method}</p>
-                    <h5>Items:</h5>
-                    <ul>
-                        {details.items.map((item, index) => (
-                            <li key={index}>{item.qty} x {item.name} @ R{parseFloat(item.price).toFixed(2)}</li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-             {details.type === 'Scrap Purchase' && (
-                <div>
-                    <h4>Scrap Purchase Details</h4>
-                    <p><strong>Supplier:</strong> {details.supplier_name || 'Walk-in'}</p>
-                    <p><strong>Material:</strong> {details.product_name}</p>
-                     <p><strong>Weight:</strong> {details.weight_kg} kg</p>
-                    <p><strong>Total Payout:</strong> R{parseFloat(details.payout_amount).toFixed(2)}</p>
-                </div>
-            )}
-             {details.type === 'Stock Take' && (
-                <div>
-                    <h4>Stock Take Details</h4>
-                    <p><strong>Processed by:</strong> {details.user_name}</p>
-                     <h5>Adjustments:</h5>
-                    <ul>
-                        {details.items.map((item, index) => (
-                            <li key={index}>
-                                {item.product}: {item.variance} units (Value: R{parseFloat(item.value).toFixed(2)})
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-        </div>
-    );
-};
-
-// --- Main Page Component ---
 const TransactionHistoryPage = () => {
+    // --- THIS IS THE CORRECTED LINE ---
     const { selectedBusiness } = useContext(AuthContext);
+
     const [transactions, setTransactions] = useState([]);
     const [summary, setSummary] = useState({ totalIncome: 0, totalExpense: 0 });
     const [loading, setLoading] = useState(true);
@@ -66,24 +18,26 @@ const TransactionHistoryPage = () => {
     
     // State for filtering
     const [filters, setFilters] = useState({
-        startDate: '',
-        endDate: '',
+        startDate: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0],
+        endDate: new Date().toISOString().split('T')[0],
         type: ''
     });
     
     // State for the drill-down modal
     const [showDetailsModal, setShowDetailsModal] = useState(false);
     const [selectedTransaction, setSelectedTransaction] = useState(null);
-    const [transactionDetails, setTransactionDetails] = useState(null);
-    const [detailsLoading, setDetailsLoading] = useState(false);
-
 
     const fetchTransactions = useCallback(async () => {
-        if (!selectedBusiness) return;
+        if (!selectedBusiness?.business_unit_id) {
+            setTransactions([]);
+            setSummary({ totalIncome: 0, totalExpense: 0 });
+            setLoading(false);
+            return;
+        }
+        
         setLoading(true);
         setError('');
         
-        // Build query string from filters
         const params = new URLSearchParams({
             businessUnitId: selectedBusiness.business_unit_id,
         });
@@ -96,51 +50,57 @@ const TransactionHistoryPage = () => {
             setTransactions(response.data.transactions);
             setSummary(response.data.summary);
         } catch (err) {
-            setError('Failed to load transactions.');
+            setError('Failed to load transactions. Check API and network connection.');
+            console.error(err);
         } finally {
             setLoading(false);
         }
     }, [selectedBusiness, filters]);
 
     useEffect(() => {
-        fetchTransactions();
-    }, [fetchTransactions]);
+        if (selectedBusiness) {
+            fetchTransactions();
+        }
+    }, [fetchTransactions, selectedBusiness]);
 
     const handleFilterChange = (e) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
     
-    // This function is called when the filter button is clicked
     const handleApplyFilters = () => {
         fetchTransactions();
     };
 
-    // Handler to open the drill-down modal
-    const handleRowClick = async (transaction) => {
-        setSelectedTransaction(transaction);
-        setDetailsLoading(true);
-        setShowDetailsModal(true);
-        try {
-            const response = await api.get(`/transactions/details/${transaction.id}`);
-            setTransactionDetails(response.data.details);
-        } catch(err) {
-            console.error("Failed to fetch details", err);
-        } finally {
-            setDetailsLoading(false);
+    const handleRowClick = (transaction) => {
+        // Only open the modal for transactions that are designed for drill-down.
+        if (transaction.source_reference) {
+            setSelectedTransaction(transaction);
+            setShowDetailsModal(true);
+        } else {
+            console.log("No drill-down available for this transaction type.");
         }
     };
     
     const closeModal = () => {
         setShowDetailsModal(false);
         setSelectedTransaction(null);
-        setTransactionDetails(null);
     }
     
-    const netTotal = summary.totalIncome - summary.totalExpense;
+    if (!selectedBusiness) {
+        return (
+            <div>
+                <h1>Transaction History</h1>
+                <p>Please select a business to continue.</p>
+            </div>
+        );
+    }
+
+    const netTotal = parseFloat(summary.totalIncome || 0) - parseFloat(summary.totalExpense || 0);
 
     return (
         <div>
             <h1>Transaction History & Reports</h1>
+            <p>Viewing history for <strong>{selectedBusiness.business_unit_name}</strong></p>
 
             <div className="report-filters">
                 <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="form-control" />
@@ -149,24 +109,23 @@ const TransactionHistoryPage = () => {
                     <option value="">All Types</option>
                     <option value="INCOME">Income</option>
                     <option value="EXPENSE">Expense</option>
-                    <option value="STOCK_GAIN">Stock Gain</option>
-                    {/* Add other transaction types as they are created */}
                 </select>
-                <button onClick={handleApplyFilters} className="btn-login">Apply Filters</button>
+                <button onClick={handleApplyFilters} className="btn-login">Filter</button>
             </div>
             
-             <div className="report-summary-bar">
+            <div className="report-summary-bar">
                 <div className="summary-widget income">
-                    <span>Total Income</span><strong>R {parseFloat(summary.totalIncome).toFixed(2)}</strong>
+                    <span>Total Income</span><strong>R {parseFloat(summary.totalIncome || 0).toFixed(2)}</strong>
                 </div>
                 <div className="summary-widget expense">
-                    <span>Total Expense</span><strong>R {parseFloat(summary.totalExpense).toFixed(2)}</strong>
+                    <span>Total Expense</span><strong>R {parseFloat(summary.totalExpense || 0).toFixed(2)}</strong>
                 </div>
                 <div className={`summary-widget ${netTotal >= 0 ? 'income' : 'expense'}`}>
                     <span>Net Total</span><strong>R {netTotal.toFixed(2)}</strong>
                 </div>
             </div>
 
+            {error && <p className="alert-error">{error}</p>}
             {loading ? <p>Loading transactions...</p> : (
                 <div className="table-wrapper">
                      <table className="inventory-table transaction-table">
@@ -181,12 +140,12 @@ const TransactionHistoryPage = () => {
                         </thead>
                         <tbody>
                             {transactions.map(t => (
-                                <tr key={t.id} onClick={() => handleRowClick(t)} className="clickable-row">
+                                <tr key={t.id} onClick={() => handleRowClick(t)} className={t.source_reference ? "clickable-row" : ""}>
                                     <td>{new Date(t.transaction_date).toLocaleString()}</td>
                                     <td>{t.description}</td>
                                     <td><span className={`status-badge type-${t.type.toLowerCase()}`}>{t.type.replace('_', ' ')}</span></td>
                                     <td>{t.customer_name || t.supplier_name || 'N/A'}</td>
-                                    <td className={t.type === 'INCOME' || t.type === 'STOCK_GAIN' ? 'income-amount' : 'expense-amount'}>
+                                    <td className={t.type.includes('INCOME') ? 'income-amount' : 'expense-amount'}>
                                         R {parseFloat(t.amount).toFixed(2)}
                                     </td>
                                 </tr>
@@ -197,17 +156,13 @@ const TransactionHistoryPage = () => {
             )}
 
             {showDetailsModal && selectedTransaction && (
-                <Modal show={showDetailsModal} onClose={closeModal} title="Transaction Drill-Down">
-                    {detailsLoading ? <p>Loading details...</p> : 
-                        <TransactionDetailsModal 
-                            transaction={selectedTransaction} 
-                            details={transactionDetails}
-                            onClose={closeModal}
-                        />
-                    }
+                <Modal show={showDetailsModal} onClose={closeModal} title={`Details for Txn #${selectedTransaction.id}`}>
+                    <TransactionDetailsModal 
+                        transaction={selectedTransaction} 
+                        onClose={closeModal}
+                    />
                 </Modal>
             )}
-
         </div>
     );
 };
