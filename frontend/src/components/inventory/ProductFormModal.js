@@ -1,37 +1,42 @@
 // frontend/src/components/inventory/ProductFormModal.js
 
-import React from 'react';
+import React, { useState, useEffect } from 'react'; // Corrected import
 import Modal from '../layout/Modal';
 import './ProductFormModal.css';
 
-// MODIFIED: Added `categories` and `preselectedCategoryId` props
 const ProductFormModal = ({ show, onClose, onSave, product, categories, preselectedCategoryId }) => {
-    const [formData, setFormData] = React.useState({
+    // --- THIS IS THE CRITICAL FIX ---
+    // The initial state of the form now includes `unit_type`.
+    const [formData, setFormData] = useState({
         name: '',
         sku: '',
-        category_id: '', // CHANGED from unit_type
+        category_id: '',
         selling_price: '',
         cost_price: '',
         quantity_on_hand: 0,
+        unit_type: 'each' // We provide a default value that will always be sent
     });
 
-    React.useEffect(() => {
-        if (product) { // Editing existing product
-            setFormData({
-                name: product.name || '',
-                sku: product.sku || '',
-                category_id: product.category_id || '', // Use category_id
-                selling_price: product.selling_price || '',
-                cost_price: product.cost_price || '',
-                quantity_on_hand: product.quantity_on_hand || 0,
-            });
-        } else { // Adding new product
-            setFormData({
-                name: '', sku: '', 
-                // Pre-fill category if one was selected, otherwise default to empty
-                category_id: preselectedCategoryId || '', 
-                selling_price: '', cost_price: '', quantity_on_hand: 0,
-            });
+    useEffect(() => {
+        if (show) { // Reset form state every time the modal is opened
+            if (product) { // Editing existing product
+                setFormData({
+                    name: product.name || '',
+                    sku: product.sku || '',
+                    category_id: product.category_id || '',
+                    selling_price: product.selling_price || '',
+                    cost_price: product.cost_price || '',
+                    quantity_on_hand: product.quantity_on_hand || 0,
+                    unit_type: product.unit_type || 'each' // Use existing unit_type or default
+                });
+            } else { // Adding new product
+                setFormData({
+                    name: '', sku: '', 
+                    category_id: preselectedCategoryId || '', 
+                    selling_price: '', cost_price: '', quantity_on_hand: 0,
+                    unit_type: 'each' // Set default for new products
+                });
+            }
         }
     }, [product, show, preselectedCategoryId]);
 
@@ -42,7 +47,8 @@ const ProductFormModal = ({ show, onClose, onSave, product, categories, preselec
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSave(formData);
+        // The `formData` object now correctly includes `unit_type` when it's passed to onSave
+        onSave(formData); 
     };
 
     return (
@@ -50,11 +56,10 @@ const ProductFormModal = ({ show, onClose, onSave, product, categories, preselec
             <form onSubmit={handleSubmit} className="product-form">
                 <div className="form-group">
                     <label>Product Name</label>
-                    <input type="text" name="name" value={formData.name} onChange={handleChange} className="form-control" required />
+                    <input type="text" name="name" value={formData.name} onChange={handleChange} className="form-control" required autoFocus />
                 </div>
                 <div className="form-group">
                     <label>Product Category</label>
-                    {/* CHANGED: Text input is now a dropdown select */}
                     <select name="category_id" value={formData.category_id} onChange={handleChange} className="form-control" required>
                         <option value="">-- Select a Category --</option>
                         {categories.map(cat => (

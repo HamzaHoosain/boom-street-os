@@ -1,28 +1,38 @@
-// frontend/src/services/api.js - CORRECTED
 import axios from 'axios';
 
+// Create a new instance of axios for our API
 const api = axios.create({
-    baseURL: '/api',
+    // This correctly points to your backend proxy
+    baseURL: '/api', 
     headers: {
-        'Content-Type': 'application/json',
-    },
+        'Content-Type': 'application/json'
+    }
 });
 
-// IMPORTANT: Interceptor to add the token to every request
+/*
+  ================================================================
+  THE CORRECT AXIOS INTERCEPTOR FOR YOUR BACKEND
+  ================================================================
+  
+  This is the corrected interceptor that matches your specific
+  authMiddleware implementation. It runs before every request.
+  
+  It gets the token from localStorage and adds it to the request
+  using the EXACT header name your backend is looking for: 'x-auth-token'.
+  
+  This will resolve the 401 Unauthorized errors.
+  ================================================================
+*/
 api.interceptors.request.use(
-    (config) => {
-        // --- THIS IS THE FIX ---
-        // Get the token directly from localStorage using the key 'token'.
+    config => {
         const token = localStorage.getItem('token');
-        
-        // If the token exists, add it to the 'x-auth-token' header.
         if (token) {
+            // Use the 'x-auth-token' header, which is correct for your middleware
             config.headers['x-auth-token'] = token;
         }
-        // --- END OF FIX ---
         return config;
     },
-    (error) => {
+    error => {
         return Promise.reject(error);
     }
 );

@@ -1,0 +1,70 @@
+/* frontend/src/pages/OrderManagementPage.css */
+
+.order-tabs {
+    display: flex;
+    border-bottom: 2px solid #4a5a70;
+    margin-bottom: 20px;
+}
+
+.order-tabs button {
+    padding: 12px 25px;
+    border: none;
+    background-color: transparent;
+    color: #a0a0a0;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s ease, border-bottom 0.2s ease;
+    border-bottom: 4px solid transparent;
+    margin-bottom: -2px; /* Align border with the container's border */
+}
+
+.order-tabs button.active {
+    color: #ffffff;
+    border-bottom: 4px solid #007bff;
+}
+
+.order-table-container {
+    background-color: #38455e;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.order-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.order-table th, .order-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #4a5a70;
+}
+.order-table th {
+    color: #d1d5db;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.9em;
+}
+.order-table tbody tr:hover {
+    background-color: #4a5a70;
+}
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-weight: 600;
+    font-size: 0.85em;
+    background-color: #5a6b80;
+    color: #e0e0e0;
+}
+.btn-print-link {
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    padding: 5px 12px;
+    border-radius: 4px;
+    font-weight: 600;
+    transition: background-color 0.2s ease;
+}
+.btn-print-link:hover {
+    background-color: #0056b3;
+}

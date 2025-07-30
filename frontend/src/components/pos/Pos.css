@@ -203,3 +203,101 @@ body {
 .alert-success { background-color: #28a745; color: white; padding: 10px 15px; border-radius: 5px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-weight: 600; }
 .alert-success .btn-print { background-color: #1a6f2c; color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; text-decoration: none; transition: background-color 0.2s ease; }
 .alert-success .btn-print:hover { background-color: #165b24; }
+
+/* --- ADD ALL OF THE FOLLOWING STYLES TO THE END OF YOUR CSS FILE --- */
+
+/* --- Low Stock Warning --- */
+.cart-items li.low-stock-warning {
+    border-left: 4px solid #ffc107; /* Yellow warning border */
+    background-color: rgba(255, 193, 7, 0.05);
+    padding-left: 10px; /* Indent the item slightly */
+}
+
+.stock-warning-label {
+    font-size: 0.8em;
+    font-weight: 700;
+    color: #ffc107;
+    margin: 0 10px; /* Space around the label */
+    flex-basis: 100%; /* Ensure it takes its own line if needed */
+    text-align: left;
+    padding-bottom: 5px;
+}
+
+/* --- Simplified Quantity Input for Orders/Quotes --- */
+.quantity-control-wrapper-simple {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.quantity-input-simple {
+    width: 60px;
+    padding: 6px;
+    border: 1px solid #5a6b80;
+    border-radius: 4px;
+    background-color: #4a5a70;
+    color: #f0f0f0;
+    text-align: center;
+    font-size: 0.9em;
+    -moz-appearance: textfield;
+}
+.quantity-input-simple::-webkit-outer-spin-button,
+.quantity-input-simple::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+
+/* --- Dynamic Button Styles for Process Buttons --- */
+/* Base styles that apply to all process buttons in the cart */
+.btn-process-default {
+    width: 100%;
+    padding: 15px;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.2em;
+    margin-top: 20px;
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    font-weight: 700;
+}
+.btn-process-default:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* Mode-specific colors */
+.btn-process-sell {
+    background-color: #28a745; /* Green */
+    box-shadow: 0 3px 10px rgba(40, 167, 69, 0.4);
+}
+.btn-process-sell:hover { background-color: #218838; }
+
+.btn-process-buy {
+    background-color: #ffc107; /* Orange */
+    color: #333;
+    box-shadow: 0 3px 10px rgba(255, 193, 7, 0.4);
+}
+.btn-process-buy:hover { background-color: #e0a800; }
+
+/* Blue for all non-financial documents */
+.btn-process-quote,
+.btn-process-sales_order,
+.btn-process-purchase_order {
+    background-color: #007bff; /* Blue */
+    box-shadow: 0 3px 10px rgba(0, 123, 255, 0.4);
+}
+.btn-process-quote:hover,
+.btn-process-sales_order:hover,
+.btn-process-purchase_order:hover {
+    background-color: #0056b3;
+}
+
+/* Make mode selector text capitalized and remove underline from a:link */
+.mode-selector button {
+    text-transform: capitalize;
+}
+.alert-success a.btn-print {
+    text-decoration: none;
+}

@@ -19,7 +19,11 @@ import DashboardPage from './pages/DashboardPage';
 import EmployeeDetailsPage from './pages/EmployeeDetailsPage';
 import EmployeesPage from './pages/EmployeesPage';
 import InvoicePage from './pages/InvoicePage';
+import QuotePage from './pages/QuotePage'; // <--- IMPORT
+import PurchaseOrderPage from './pages/PurchaseOrderPage'; // <--- IMPORT WHEN CREATED
+import SalesOrderPage from './pages/SalesOrderPage'; // <--- IMPORT WHEN CREATED
 import InventoryPage from './pages/InventoryPage';
+import OrderManagementPage from './pages/OrderManagementPage';
 import LoginPage from './pages/LoginPage';
 import PayrollPage from './pages/PayrollPage';
 import PosPage from './pages/PosPage';
@@ -47,14 +51,20 @@ function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/select-business" element={<BusinessSelectorPage />} />
                 <Route path="/invoice/:saleId" element={<InvoicePage />} />
-                <Route path="/remittance/:purchaseId" element={<RemittancePage />} /> {/* Corrected to be outside */}
-
+                 <Route path="/quote/:quoteId" element={<QuotePage />} />
+                  <Route path="/purchase-order/:poId" element={<PurchaseOrderPage />} /> 
+                  <Route path="/sales-order/:soId" element={<SalesOrderPage />} /> 
+                <Route path="/remittance/:purchaseId" element={<RemittancePage />} /> 
+                
                 {/* Parent for all main protected routes */}
                 <Route element={<ProtectedRoutes />}>
                     <Route path="/" element={<DashboardPage />} />
                     <Route path="/pos" element={<PosPage />} />
                     <Route path="/transactions" element={<TransactionHistoryPage />} />
                     <Route path="/inventory" element={<InventoryPage />} />
+                    <Route path="/order-management" element={<OrderManagementPage />} />
+                    
+                    {/* The Stock Take page is now correctly linked in the sidebar */}
                     <Route path="/stocktake" element={<StockTakePage />} />
                     
                     {/* Cleaned up and corrected routes */}

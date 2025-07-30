@@ -1,9 +1,9 @@
 // frontend/src/components/pos/ProductList.js
 
 import React from 'react';
+import './Pos.css'; // Ensure you're importing the styles for the new image grid
 
-// The new ProductList component for the image-driven grid
-const ProductList = ({ products, onAddToCart, isBuyMode, customPrices = {} }) => {
+const ProductList = ({ products, onAddToCart, isCostMode, customPrices = {} }) => {
     if (!products) {
         return <p className="loading-or-empty-message">Loading products...</p>;
     }
@@ -17,15 +17,15 @@ const ProductList = ({ products, onAddToCart, isBuyMode, customPrices = {} }) =>
             {products.map((product) => {
                 // Determine the correct price to display (default, custom, or cost)
                 const customPrice = customPrices[product.id];
-                const displayPrice = isBuyMode 
-                    ? product.cost_price 
-                    : (customPrice !== undefined ? customPrice : product.selling_price);
-
-                // Check if this product has a special price for the current customer
-                const hasCustomPrice = !isBuyMode && customPrice !== undefined;
+                const displayPrice = isCostMode ? product.cost_price : (customPrice !== undefined ? customPrice : product.selling_price);
                 
-                // Use the product's image_url, or fallback to the placeholder
-                const imageUrl = product.image_url || '/placeholder.png';
+                // --- CRITICAL FIX 1 ---
+                // Check if this product has a special price, using the correct 'isCostMode' variable.
+                const hasCustomPrice = !isCostMode && customPrice !== undefined;
+                
+                // Use the product's image_url, or fallback to a placeholder if it doesn't exist.
+                // Ensure you have a placeholder.png in your /public folder.
+                const imageUrl = product.image_url || '/placeholder.png'; 
 
                 return (
                     <div 
@@ -37,8 +37,11 @@ const ProductList = ({ products, onAddToCart, isBuyMode, customPrices = {} }) =>
                         <div className="card-overlay">
                             <div className="card-product-name">{product.name}</div>
                             <div className={`card-product-price ${hasCustomPrice ? 'custom' : ''}`}>
-                                R {parseFloat(displayPrice).toFixed(2)}
-                                {isBuyMode && ' /kg'}
+                                R {parseFloat(displayPrice || 0).toFixed(2)}
+
+                                {/* --- CRITICAL FIX 2 --- */}
+                                {/* The check for '/kg' suffix must also use 'isCostMode'. */}
+                                {isCostMode && ' /kg'}
                             </div>
                         </div>
                     </div>

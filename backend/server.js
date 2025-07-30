@@ -29,11 +29,18 @@ const businessUnitsRoutes = require('./routes/businessUnits');
 // Assuming a terminals route file exists
 // const terminalsRoutes = require('./routes/terminals');
 const transactionsRoutes = require('./routes/transactions');
+const quotesRoutes = require('./routes/quotes');
+const purchaseOrdersRoutes = require('./routes/purchaseOrders');
+const salesOrdersRoutes = require('./routes/salesOrders');
+
 const transfersRoutes = require('./routes/transfers');
 
 // --- API ROUTE USAGE ---
 app.use('/api/auth', authRoutes);
 app.use('/api/categories', categoriesRoutes);
+app.use('/api/quotes', quotesRoutes);
+app.use('/api/purchase-orders', purchaseOrdersRoutes);
+app.use('/api/sales-orders', salesOrdersRoutes);
 app.use('/api/cash', cashRoutes);
 app.use('/api/customers', customersRoutes);
 app.use('/api/dashboard', dashboardRoutes);

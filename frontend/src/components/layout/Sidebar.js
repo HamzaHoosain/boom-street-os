@@ -54,6 +54,9 @@ const Sidebar = () => {
                 
                 {/* Common Links for both business types */}
                 <li><NavLink to="/suppliers">Product Suppliers</NavLink></li>
+                <li><NavLink to="/order-management">Order Management</NavLink></li>
+                
+                {/* Employee Management Links */}
                 <li><NavLink to="/employees">Employees</NavLink></li>
                 <li><NavLink to="/payroll">Payroll</NavLink></li>
                 <li><NavLink to="/cash-management">Cash Management</NavLink></li>

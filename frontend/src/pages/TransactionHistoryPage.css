@@ -1,0 +1,60 @@
+/* frontend/src/pages/TransactionHistoryPage.css */
+
+.report-filters {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    background-color: #38455e;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+}
+.report-filters .form-control {
+    flex-grow: 1;
+}
+.report-filters button {
+    max-width: 150px;
+}
+
+.report-summary-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.summary-widget {
+    background-color: #38455e;
+    padding: 1.25rem;
+    border-radius: 6px;
+    text-align: center;
+}
+.summary-widget span {
+    display: block;
+    font-size: 1em;
+    color: #adb5bd;
+    margin-bottom: 0.5rem;
+}
+.summary-widget strong {
+    display: block;
+    font-size: 2em;
+    font-weight: 900;
+}
+.summary-widget.income strong { color: #28a745; }
+.summary-widget.expense strong { color: #dc3545; }
+
+.transaction-table .clickable-row:hover {
+    background-color: #4a5a70;
+    cursor: pointer;
+}
+.transaction-table .income-amount {
+    color: #28a745;
+    font-weight: 700;
+}
+.transaction-table .expense-amount {
+    color: #dc3545;
+    font-weight: 700;
+}
+
+.status-badge.type-income, .status-badge.type-stock-gain { background-color: #28a745; }
+.status-badge.type-expense { background-color: #dc3545; }
+.status-badge.type-transfer { background-color: #ffc107; color: #333; }
