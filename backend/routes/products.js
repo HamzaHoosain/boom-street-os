@@ -62,6 +62,25 @@ router.put('/:id', authMiddleware, async (req, res) => {
     }
 });
 
+// @route   DELETE api/products/:id
+// @desc    Delete a product
+// @access  Private
+router.delete('/:id', authMiddleware, async (req, res) => {
+    try {
+        const result = await db.query('DELETE FROM products WHERE id = $1', [req.params.id]);
+        if (result.rowCount === 0) {
+            return res.status(404).json({ msg: 'Product not found' });
+        }
+        res.json({ msg: 'Product deleted successfully' });
+    } catch (err) {
+        console.error("Delete Product Error:", err.message);
+        // Handle foreign key constraint error (if product is in a sale)
+        if (err.code === '23503') {
+            return res.status(400).json({ msg: 'Cannot delete product as it is part of existing sales or orders.' });
+        }
+        res.status(500).send('Server Error');
+    }
+});
 
 // @route   GET api/products/overview/all
 // @desc    Get a simplified list of all products from all business units
@@ -145,6 +164,7 @@ router.get('/:businessUnitId', authMiddleware, async (req, res) => {
         res.status(500).send('Server Error');
     }
 });
+
 
 // Any image upload route would also go here.
 

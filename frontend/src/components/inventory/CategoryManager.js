@@ -1,50 +1,87 @@
 // frontend/src/components/inventory/CategoryManager.js
 
-import React from 'react';
+import React, { useState } from 'react';
 import './Inventory.css';
 
 const CategoryManager = ({ categories, selectedCategoryId, onSelectCategory, onSaveCategory, onDeleteCategory }) => {
-    
-    const handleAdd = () => {
-        const name = prompt("Enter new category name:");
-        if (name) {
-            onSaveCategory({ name });
-        }
+    const [editingCategoryId, setEditingCategoryId] = useState(null);
+    const [newCategoryName, setNewCategoryName] = useState('');
+    const [isAdding, setIsAdding] = useState(false);
+
+    const handleStartEdit = (category) => {
+        setEditingCategoryId(category.id);
+        setNewCategoryName(category.name);
     };
 
-    const handleEdit = (category) => {
-        const name = prompt("Enter new name for category:", category.name);
-        if (name && name !== category.name) {
-            onSaveCategory({ ...category, name });
-        }
+    const handleSave = () => {
+        if (!newCategoryName.trim()) return; // Prevent saving empty names
+        onSaveCategory({ id: editingCategoryId, name: newCategoryName });
+        setEditingCategoryId(null);
+        setNewCategoryName('');
+    };
+    
+    const handleSaveNew = () => {
+        if (!newCategoryName.trim()) return;
+        onSaveCategory({ name: newCategoryName });
+        setIsAdding(false);
+        setNewCategoryName('');
+    };
+
+    const handleCancel = () => {
+        setEditingCategoryId(null);
+        setIsAdding(false);
+        setNewCategoryName('');
     };
 
     return (
         <div className="category-manager">
             <div className="category-manager-header">
                 <h3>Categories</h3>
-                <button onClick={handleAdd} className="btn-add-category">+</button>
+                <button onClick={() => setIsAdding(true)} className="btn-add-category" title="Add New Category">+</button>
             </div>
             <ul className="category-list">
-                <li
-                    className={!selectedCategoryId ? 'selected' : ''}
-                    onClick={() => onSelectCategory(null)}
-                >
+                <li className={!selectedCategoryId ? 'selected' : ''} onClick={() => onSelectCategory(null)}>
                     All Products
                 </li>
                 {categories.map(cat => (
-                    <li 
-                        key={cat.id} 
-                        className={selectedCategoryId === cat.id ? 'selected' : ''}
-                        onClick={() => onSelectCategory(cat.id)}
-                    >
-                        <span className="category-name">{cat.name}</span>
-                        <div className="category-actions">
-                            <button onClick={(e) => { e.stopPropagation(); handleEdit(cat); }} className="btn-cat-edit">✏️</button>
-                            <button onClick={(e) => { e.stopPropagation(); onDeleteCategory(cat.id); }} className="btn-cat-delete">🗑️</button>
-                        </div>
+                    <li key={cat.id} className={selectedCategoryId === cat.id ? 'selected' : ''}>
+                        {editingCategoryId === cat.id ? (
+                            <div className="inline-edit-form">
+                                <input 
+                                    type="text" 
+                                    value={newCategoryName} 
+                                    onChange={(e) => setNewCategoryName(e.target.value)} 
+                                    autoFocus 
+                                    onKeyDown={(e) => e.key === 'Enter' && handleSave()}
+                                />
+                                <button onClick={handleSave}>✔️</button>
+                                <button onClick={handleCancel}>❌</button>
+                            </div>
+                        ) : (
+                            <>
+                                <span className="category-name" onClick={() => onSelectCategory(cat.id)}>{cat.name}</span>
+                                <div className="category-actions">
+                                    <button onClick={() => handleStartEdit(cat)} title="Edit">✏️</button>
+                                    <button onClick={() => onDeleteCategory(cat.id)} title="Delete">🗑️</button>
+                                </div>
+                            </>
+                        )}
                     </li>
                 ))}
+                {isAdding && (
+                    <li className="inline-edit-form">
+                         <input 
+                            type="text" 
+                            value={newCategoryName} 
+                            placeholder="New category name..."
+                            onChange={(e) => setNewCategoryName(e.target.value)} 
+                            autoFocus 
+                            onKeyDown={(e) => e.key === 'Enter' && handleSaveNew()}
+                        />
+                        <button onClick={handleSaveNew}>✔️</button>
+                        <button onClick={handleCancel}>❌</button>
+                    </li>
+                )}
             </ul>
         </div>
     );

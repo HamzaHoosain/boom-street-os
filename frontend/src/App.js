@@ -17,6 +17,7 @@ import CustomersPage from './pages/CustomersPage';
 import StockTakePage from './pages/StockTakePage';
 import DashboardPage from './pages/DashboardPage';
 import EmployeeDetailsPage from './pages/EmployeeDetailsPage';
+import EditProductPage from './pages/EditProductPage';
 import EmployeesPage from './pages/EmployeesPage';
 import InvoicePage from './pages/InvoicePage';
 import QuotePage from './pages/QuotePage'; // <--- IMPORT
@@ -55,13 +56,14 @@ function App() {
                   <Route path="/purchase-order/:poId" element={<PurchaseOrderPage />} /> 
                   <Route path="/sales-order/:soId" element={<SalesOrderPage />} /> 
                 <Route path="/remittance/:purchaseId" element={<RemittancePage />} /> 
-                
+
                 {/* Parent for all main protected routes */}
                 <Route element={<ProtectedRoutes />}>
                     <Route path="/" element={<DashboardPage />} />
                     <Route path="/pos" element={<PosPage />} />
                     <Route path="/transactions" element={<TransactionHistoryPage />} />
                     <Route path="/inventory" element={<InventoryPage />} />
+                    <Route path="/inventory/product/:productId" element={<EditProductPage />} />
                     <Route path="/order-management" element={<OrderManagementPage />} />
                     
                     {/* The Stock Take page is now correctly linked in the sidebar */}

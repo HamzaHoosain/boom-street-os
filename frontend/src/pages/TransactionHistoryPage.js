@@ -8,91 +8,104 @@ import TransactionDetailsModal from '../components/transactions/TransactionDetai
 import './TransactionHistoryPage.css';
 
 const TransactionHistoryPage = () => {
-    // --- THIS IS THE CORRECTED LINE ---
     const { selectedBusiness } = useContext(AuthContext);
-
     const [transactions, setTransactions] = useState([]);
     const [summary, setSummary] = useState({ totalIncome: 0, totalExpense: 0 });
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [selectedTransaction, setSelectedTransaction] = useState(null);
     
-    // State for filtering
     const [filters, setFilters] = useState({
         startDate: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0],
         endDate: new Date().toISOString().split('T')[0],
         type: ''
     });
     
-    // State for the drill-down modal
-    const [showDetailsModal, setShowDetailsModal] = useState(false);
-    const [selectedTransaction, setSelectedTransaction] = useState(null);
-
-    const fetchTransactions = useCallback(async () => {
-        if (!selectedBusiness?.business_unit_id) {
-            setTransactions([]);
-            setSummary({ totalIncome: 0, totalExpense: 0 });
-            setLoading(false);
-            return;
-        }
-        
-        setLoading(true);
-        setError('');
-        
-        const params = new URLSearchParams({
-            businessUnitId: selectedBusiness.business_unit_id,
-        });
-        if (filters.startDate) params.append('startDate', filters.startDate);
-        if (filters.endDate) params.append('endDate', filters.endDate);
-        if (filters.type) params.append('type', filters.type);
-
-        try {
-            const response = await api.get(`/transactions?${params.toString()}`);
-            setTransactions(response.data.transactions);
-            setSummary(response.data.summary);
-        } catch (err) {
-            setError('Failed to load transactions. Check API and network connection.');
-            console.error(err);
-        } finally {
-            setLoading(false);
-        }
-    }, [selectedBusiness, filters]);
-
+    // This state is for the *active* filters that have been submitted
+    const [activeFilters, setActiveFilters] = useState(filters);
+    
     useEffect(() => {
-        if (selectedBusiness) {
-            fetchTransactions();
-        }
-    }, [fetchTransactions, selectedBusiness]);
+        const fetchTransactions = async () => {
+            if (!selectedBusiness?.business_unit_id) {
+                setTransactions([]);
+                setSummary({ totalIncome: 0, totalExpense: 0 });
+                setLoading(false);
+                return;
+            }
+            
+            setLoading(true);
+            setError('');
+            
+            const params = new URLSearchParams({
+                businessUnitId: selectedBusiness.business_unit_id,
+            });
+            if (activeFilters.startDate) params.append('startDate', activeFilters.startDate);
+            if (activeFilters.endDate) params.append('endDate', activeFilters.endDate);
+            if (activeFilters.type) params.append('type', activeFilters.type);
+
+            try {
+                const response = await api.get(`/transactions?${params.toString()}`);
+                setTransactions(response.data.transactions);
+                setSummary(response.data.summary);
+            } catch (err) {
+                setError('Failed to load transactions. Check API and network connection.');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTransactions();
+    // Re-run this effect ONLY when the business or the *active* filters change.
+    }, [selectedBusiness, activeFilters]);
 
     const handleFilterChange = (e) => {
         setFilters({ ...filters, [e.target.name]: e.target.value });
     };
     
+    // The "Apply Filters" button now updates the `activeFilters`, which triggers the useEffect
     const handleApplyFilters = () => {
-        fetchTransactions();
+        setActiveFilters(filters);
+    };
+    const handleRowClick = (transaction) => {
+        if (!transaction.source_reference) return;
+        setSelectedTransaction(transaction);
+        setShowDetailsModal(true);
+    };
+    const closeModal = () => { setSelectedTransaction(null); setShowDetailsModal(false); };
+
+       const getTransactionDisplayInfo = (transaction) => {
+        // Use optional chaining for safety. Provide a default empty string.
+        const type = transaction.type || '';
+        const description = transaction.description?.toLowerCase() || '';
+
+        // Now, perform checks using .includes() which is more robust
+        // against variations like 'INCOME' vs 'INTERNAL_INCOME'
+        
+        // Handle special cases first
+        if (type.includes('INCOME') && description.includes('on_account')) {
+            return { label: 'On Account', className: 'receivable' };
+        }
+        if (type === 'ACCOUNT_PAYMENT') {
+            return { label: 'Account Payment', className: 'neutral' };
+        }
+
+        // Handle general cases
+        if (type.includes('INCOME')) {
+            return { label: 'Income', className: 'income' };
+        }
+        if (type.includes('EXPENSE')) {
+            return { label: 'Expense', className: 'expense' };
+        }
+        
+        // Fallback for anything else (REVERSAL, TRANSFER, etc.)
+        return { label: type.replace('_', ' '), className: 'generic' };
     };
 
-    const handleRowClick = (transaction) => {
-        // Only open the modal for transactions that are designed for drill-down.
-        if (transaction.source_reference) {
-            setSelectedTransaction(transaction);
-            setShowDetailsModal(true);
-        } else {
-            console.log("No drill-down available for this transaction type.");
-        }
-    };
-    
-    const closeModal = () => {
-        setShowDetailsModal(false);
-        setSelectedTransaction(null);
-    }
-    
     if (!selectedBusiness) {
-        return (
-            <div>
-                <h1>Transaction History</h1>
-                <p>Please select a business to continue.</p>
-            </div>
-        );
+        return <div><h1>Transaction History</h1><p>Please select a business to continue.</p></div>;
     }
 
     const netTotal = parseFloat(summary.totalIncome || 0) - parseFloat(summary.totalExpense || 0);
@@ -101,7 +114,6 @@ const TransactionHistoryPage = () => {
         <div>
             <h1>Transaction History & Reports</h1>
             <p>Viewing history for <strong>{selectedBusiness.business_unit_name}</strong></p>
-
             <div className="report-filters">
                 <input type="date" name="startDate" value={filters.startDate} onChange={handleFilterChange} className="form-control" />
                 <input type="date" name="endDate" value={filters.endDate} onChange={handleFilterChange} className="form-control" />
@@ -139,17 +151,30 @@ const TransactionHistoryPage = () => {
                             </tr>
                         </thead>
                         <tbody>
-                            {transactions.map(t => (
-                                <tr key={t.id} onClick={() => handleRowClick(t)} className={t.source_reference ? "clickable-row" : ""}>
-                                    <td>{new Date(t.transaction_date).toLocaleString()}</td>
-                                    <td>{t.description}</td>
-                                    <td><span className={`status-badge type-${t.type.toLowerCase()}`}>{t.type.replace('_', ' ')}</span></td>
-                                    <td>{t.customer_name || t.supplier_name || 'N/A'}</td>
-                                    <td className={t.type.includes('INCOME') ? 'income-amount' : 'expense-amount'}>
-                                        R {parseFloat(t.amount).toFixed(2)}
-                                    </td>
-                                </tr>
-                            ))}
+                            {transactions.map(t => {
+                                // For each transaction, get its specific display info
+                                const displayInfo = getTransactionDisplayInfo(t);
+
+                                return (
+                                    <tr key={t.id} onClick={() => handleRowClick(t)} className={t.source_reference ? "clickable-row" : ""}>
+                                        <td>{new Date(t.transaction_date).toLocaleString()}</td>
+                                        <td>{t.description}</td>
+                                        <td>
+                                            {/* Use the new class and label */}
+                                             <span className={`status-badge type-${displayInfo.className}`}>{displayInfo.label}</span>
+                                        </td>
+                                        <td>{t.party_name || 'N/A'}</td>
+
+                                        {/* --- THIS IS THE CORRECTED LINE --- */}
+                                         <td className={`${displayInfo.className}-amount`}>
+                                            R {parseFloat(t.amount).toFixed(2)}
+                                        
+                                        
+                                        
+                                        </td>
+                                    </tr>
+                                );
+                            })}
                         </tbody>
                     </table>
                 </div>

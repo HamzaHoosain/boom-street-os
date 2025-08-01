@@ -21,7 +21,7 @@ const logisticsRoutes = require('./routes/logistics');
 const payrollRoutes = require('./routes/payroll');
 const productsRoutes = require('./routes/products');
 // Assuming a reporting route file exists
-// const reportingRoutes = require('./routes/reporting');
+const reportingRoutes = require('./routes/reporting');
 const salesRoutes = require('./routes/sales');
 const scrapyardRoutes = require('./routes/scrapyard');
 const suppliersRoutes = require('./routes/suppliers');
@@ -32,7 +32,7 @@ const transactionsRoutes = require('./routes/transactions');
 const quotesRoutes = require('./routes/quotes');
 const purchaseOrdersRoutes = require('./routes/purchaseOrders');
 const salesOrdersRoutes = require('./routes/salesOrders');
-
+const purchasesRoutes = require('./routes/purchases');
 const transfersRoutes = require('./routes/transfers');
 
 // --- API ROUTE USAGE ---
@@ -51,7 +51,8 @@ app.use('/api/logistics', logisticsRoutes);
 // app.use('/api/panelbeating', panelbeatingRoutes);
 app.use('/api/payroll', payrollRoutes);
 app.use('/api/products', productsRoutes);
-// app.use('/api/reporting', reportingRoutes);
+app.use('/api/purchases', purchasesRoutes);
+app.use('/api/reporting', reportingRoutes);
 app.use('/api/sales', salesRoutes);
 app.use('/api/stocktakes', require('./routes/stocktakes'));
 app.use('/api/scrapyard', scrapyardRoutes);

@@ -1,80 +1,159 @@
+// backend/routes/reporting.js
+
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const authMiddleware = require('../middleware/authMiddleware');
 
-// @route   GET api/reporting/profit-and-loss
-// @desc    Generate a comprehensive, detailed Profit & Loss statement
+// @route   GET api/reporting/dashboard-report
+// @desc    Generate a comprehensive BI report with KPIs and detailed lists
 // @access  Private
-router.get('/profit-and-loss', authMiddleware, async (req, res) => {
-    const { business_unit_id, start_date, end_date } = req.query;
+router.get('/dashboard-report', authMiddleware, async (req, res) => {
+    // This correctly destructures all query parameters from the request
+    const { business_unit_id, start_date, end_date, itemsLimit, customersLimit, purchasesLimit } = req.query;
 
     if (!business_unit_id || !start_date || !end_date) {
-        return res.status(400).json({ msg: 'Please provide all required fields.' });
+        return res.status(400).json({ msg: 'Business unit, start date, and end date are required.' });
     }
-
-    // Adjust the end date to include the entire day, fixing timezone issues
     const fullDayEndDate = `${end_date} 23:59:59.999`;
 
+    // Reusable SQL filter snippets for multi-tenancy
+    const transactionFilter = `t.business_unit_id = ${parseInt(business_unit_id)}`; // Aliased
+    const salesFilter = `s.business_unit_id = ${parseInt(business_unit_id)}`;
+    
+    // Correctly create separate limit clauses for each query
+    const itemsLimitClause = parseInt(itemsLimit) === 0 ? '' : `LIMIT ${parseInt(itemsLimit) || 10}`;
+    const customersLimitClause = parseInt(customersLimit) === 0 ? '' : `LIMIT ${parseInt(customersLimit) || 10}`;
+    const purchasesLimitClause = parseInt(purchasesLimit) === 0 ? '' : `LIMIT ${parseInt(purchasesLimit) || 10}`;
+    
     try {
-        const isOverview = business_unit_id === 'overview';
-        // Create a reusable SQL filter for business unit
-        const businessFilter = isOverview ? '' : `AND s.business_unit_id = ${parseInt(business_unit_id)}`;
-        const transactionBusinessFilter = isOverview ? '' : `AND business_unit_id = ${parseInt(business_unit_id)}`;
+        // --- THIS IS THE DEFINITIVE FIX FOR FINANCIAL ACCURACY ---
+        const financialsQuery = `
+            SELECT type, SUM(amount) as total
+            FROM transactions
+            WHERE business_unit_id = $1
+              AND transaction_date BETWEEN $2 AND $3
+            GROUP BY type
+        `;
+        const financialsResult = await db.query(financialsQuery, [business_unit_id, start_date, fullDayEndDate]);
+        
+        let grossRevenue = 0;
+        let operatingExpenses = 0;
+        financialsResult.rows.forEach(row => {
+            if (row.type === 'INCOME') {
+                grossRevenue = parseFloat(row.total);
+            }
+            if (row.type === 'EXPENSE') {
+                operatingExpenses = Math.abs(parseFloat(row.total));
+            }
+        });
 
-        // 1. Gross Revenue (All sales income, including those on account)
-        const revenueQuery = `
-            SELECT COALESCE(SUM(s.total_amount), 0) as total 
-            FROM sales s 
-            WHERE s.sale_date BETWEEN $1 AND $2 ${businessFilter}`;
-        const revenueResult = await db.query(revenueQuery, [start_date, fullDayEndDate]);
-        const grossRevenue = parseFloat(revenueResult.rows[0].total);
-
-        // 2. Cost of Goods Sold (COGS) - The sum of the cost of all items sold
         const cogsQuery = `
-            SELECT COALESCE(SUM(si.quantity_sold * si.cost_at_sale), 0) as total
-            FROM sale_items si
-            JOIN sales s ON si.sale_id = s.id
-            WHERE s.sale_date BETWEEN $1 AND $2 ${businessFilter}`;
+            SELECT COALESCE(SUM(si.quantity_sold * si.cost_at_sale), 0) as total_cogs
+            FROM sale_items si JOIN sales s ON si.sale_id = s.id
+            WHERE ${salesFilter} AND s.sale_date BETWEEN $1 AND $2
+        `;
         const cogsResult = await db.query(cogsQuery, [start_date, fullDayEndDate]);
-        const cogs = parseFloat(cogsResult.rows[0].total);
+        const costOfGoodsSold = parseFloat(cogsResult.rows[0].total_cogs);
 
-        // Gross Profit is the direct profit from sales
-        const grossProfit = grossRevenue - cogs;
 
-        // 3. Operating Expenses (all transactions marked as 'EXPENSE')
-        const expenseQuery = `
-            SELECT COALESCE(SUM(amount), 0) as total 
-            FROM transactions 
-            WHERE transaction_date BETWEEN $1 AND $2 AND type = 'EXPENSE' ${transactionBusinessFilter}`;
-        const expenseResult = await db.query(expenseQuery, [start_date, fullDayEndDate]);
-        const operatingExpenses = parseFloat(expenseResult.rows[0].total);
-
-        // Net Profit is what's left after all expenses are paid
+        // --- 2. PROFITABILITY CALCULATIONS (This logic is correct) ---
+        const grossProfit = grossRevenue - costOfGoodsSold;
         const netProfit = grossProfit - operatingExpenses;
 
-        // 4. Expected Income (Accounts Receivable) - This is a snapshot of all customer debt
-        // Note: This is NOT filtered by date, as it represents the total current amount owed.
-        const receivableQuery = `SELECT COALESCE(SUM(account_balance), 0) as total FROM customers`;
-        const receivableResult = await db.query(receivableQuery);
-        const expectedIncome = parseFloat(receivableResult.rows[0].total);
-        
-        // 5. Tax Estimation (Simple example: 15% of net profit, only if profitable)
-        const tax = netProfit > 0 ? netProfit * 0.15 : 0;
 
-        // Assemble the final, detailed report object
+        // --- 3. ACCOUNTS RECEIVABLE (This logic is correct) ---
+        const receivableQuery = `
+            SELECT COALESCE(SUM(account_balance), 0) as total_receivable 
+            FROM customers WHERE business_unit_id = $1 AND account_balance > 0
+        `;
+        const receivableResult = await db.query(receivableQuery, [business_unit_id]);
+        const accountsReceivable = parseFloat(receivableResult.rows[0].total_receivable);
+        
+
+        // --- 4. TOP PERFORMING ITEMS LIST (CORRECTED) ---
+        const topItemsQuery = `
+            SELECT
+                p.name as product_name,
+                SUM(si.quantity_sold) as units_sold,
+                SUM(si.quantity_sold * si.price_at_sale) as revenue,
+                SUM(si.quantity_sold * si.cost_at_sale) as cogs,
+                SUM((si.quantity_sold * si.price_at_sale) - (si.quantity_sold * si.cost_at_sale)) as profit
+            FROM sale_items si
+            JOIN sales s ON si.sale_id = s.id
+            JOIN products p ON si.product_id = p.id
+            WHERE ${salesFilter} AND s.sale_date BETWEEN $1 AND $2
+            GROUP BY p.name
+            ORDER BY profit DESC
+            ${itemsLimitClause} -- Uses the correct limit clause
+        `;
+        const topItemsResult = await db.query(topItemsQuery, [start_date, fullDayEndDate]);
+
+
+        // --- 5. TOP CUSTOMERS LIST (CORRECTED) ---
+        const topCustomersQuery = `
+            SELECT
+                c.name as customer_name,
+                c.account_balance,
+                COUNT(s.id) as number_of_sales,
+                SUM(s.total_amount) as total_revenue
+            FROM sales s
+            JOIN customers c ON s.customer_id = c.id
+            WHERE ${salesFilter} AND s.customer_id IS NOT NULL AND s.sale_date BETWEEN $1 AND $2
+            GROUP BY c.id, c.name, c.account_balance
+            ORDER BY total_revenue DESC
+            ${customersLimitClause} -- Uses the correct limit clause
+        `;
+        const topCustomersResult = await db.query(topCustomersQuery, [start_date, fullDayEndDate]);
+
+         // --- 6. TOP PURCHASED ITEMS LIST (THIS IS THE DEFINITIVELY CORRECTED QUERY) ---
+        const topPurchasesQuery = `
+            SELECT
+                prod.name as product_name,
+                SUM(sp.weight_kg) as total_weight,
+                SUM(sp.payout_amount) as total_payout
+            FROM scrap_purchases sp
+            JOIN products prod ON sp.product_id = prod.id
+            WHERE sp.id IN (
+                -- This subquery creates the correct link.
+                -- First, find all 'scrap_purchase' transaction source_references within the date range.
+                -- Then, unnest the comma-separated IDs into rows.
+                SELECT DISTINCT UNNEST(string_to_array(substring(source_reference from 16), ','))::integer
+                FROM transactions
+                WHERE business_unit_id = $1
+                  AND type = 'EXPENSE'
+                  AND source_reference LIKE 'scrap_purchase:%'
+                  AND transaction_date BETWEEN $2 AND $3
+            )
+            GROUP BY prod.name
+            ORDER BY total_payout DESC
+            ${purchasesLimitClause}
+        `;
+        // Pass the correct parameters to this query
+        const topPurchasesResult = await db.query(topPurchasesQuery, [business_unit_id, start_date, fullDayEndDate]);
+
+        // --- FINAL RESPONSE ASSEMBLY (This is correct) ---
         res.json({
-            gross_revenue: grossRevenue,
-            cost_of_goods_sold: cogs,
-            gross_profit: grossProfit,
-            operating_expenses: operatingExpenses,
-            net_profit: netProfit,
-            expected_income_receivable: expectedIncome,
-            estimated_tax: tax
+            profitAndLoss: {
+                gross_revenue: grossRevenue,
+                cost_of_goods_sold: costOfGoodsSold,
+                gross_profit: grossProfit,
+                operating_expenses: operatingExpenses,
+                net_profit: netProfit,
+            },
+            keyMetrics: {
+                accounts_receivable: accountsReceivable,
+                profit_margin: grossRevenue > 0 ? (netProfit / grossRevenue) * 100 : 0
+            },
+            detailedLists: {
+                top_selling_products: topItemsResult.rows,
+                top_customers_by_revenue: topCustomersResult.rows,
+                top_purchased_products: topPurchasesResult.rows
+            }
         });
 
     } catch (err) {
-        console.error('P&L Report Error:', err.message);
+        console.error('Dashboard Report Error:', err.message);
         res.status(500).send('Server Error');
     }
 });

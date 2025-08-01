@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import api from '../services/api';
-import './InvoicePage.css'; // Reuse the 58mm thermal receipt styles
+import './InvoicePage.css'; // Reuse the thermal receipt styles
 
 const RemittancePage = () => {
     const { purchaseId } = useParams();
@@ -12,13 +12,13 @@ const RemittancePage = () => {
     const [error, setError] = useState('');
 
     useEffect(() => {
+        if (!purchaseId) return;
         const fetchRemittance = async () => {
+            setLoading(true);
             try {
-                // You must build this new backend endpoint
                 const response = await api.get(`/purchases/${purchaseId}`);
                 setRemittanceData(response.data);
             } catch (err) {
-                console.error("Failed to load remittance:", err);
                 setError('Failed to load remittance data.');
             } finally {
                 setLoading(false);
@@ -26,13 +26,13 @@ const RemittancePage = () => {
         };
         fetchRemittance();
     }, [purchaseId]);
-    
+
     useEffect(() => {
         if (remittanceData) setTimeout(() => window.print(), 500);
     }, [remittanceData]);
 
-    if (loading) return <p className="invoice-loading">Loading Remittance...</p>;
-    if (error) return <p className="alert-error">{error}</p>;
+    if (loading) return <p>Loading Remittance...</p>;
+    if (error) return <p>{error}</p>;
     if (!remittanceData || !remittanceData.purchase_details) return <p>Remittance data not found.</p>;
 
     const { purchase_details, line_items, business_unit_details, supplier_details } = remittanceData;
@@ -41,7 +41,7 @@ const RemittancePage = () => {
         <div className="receipt-container">
             <header className="receipt-header">
                 <h1>REMITTANCE ADVICE</h1>
-                <p>{business_unit_details?.name || 'Your Business'}</p>
+                <p>{business_unit_details?.name}</p>
             </header>
 
             <hr className="receipt-hr" />
@@ -62,12 +62,12 @@ const RemittancePage = () => {
             <hr className="receipt-hr" />
 
             <section className="item-list-section">
-                {line_items.map(item => (
-                    <div className="item-entry" key={item.id}>
+                {line_items.map((item, index) => (
+                    <div className="item-entry" key={index}>
                         <p className="item-description">{item.product_name}</p>
                         <div className="item-details-line">
-                            <span>{parseFloat(item.weight_kg).toFixed(2)}kg @ R{parseFloat(item.price_per_kg).toFixed(2)}/kg</span>
-                            <span>R{(parseFloat(item.weight_kg) * parseFloat(item.price_per_kg)).toFixed(2)}</span>
+                            <span>{parseFloat(item.weight_kg).toFixed(2)}kg</span>
+                            <span>R{parseFloat(item.payout_amount).toFixed(2)}</span>
                         </div>
                     </div>
                 ))}
@@ -81,12 +81,6 @@ const RemittancePage = () => {
                     <span>R{parseFloat(purchase_details.payout_amount).toFixed(2)}</span>
                 </div>
             </section>
-            
-            <hr className="receipt-hr" />
-
-            <footer className="receipt-footer">
-                <p>Payment processed successfully.</p>
-            </footer>
         </div>
     );
 };

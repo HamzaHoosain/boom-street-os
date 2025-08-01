@@ -1,28 +1,37 @@
 // frontend/src/components/transactions/TransactionDetailsModal.js
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // CORRECTED IMPORT
 import api from '../../services/api';
-import './TransactionDetailsModal.css'; // We will create this CSS file in the next step
+import './TransactionDetailsModal.css';
 
 const TransactionDetailsModal = ({ transaction, onClose }) => {
     const [details, setDetails] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const getAmountClass = (transaction) => {
+        const type = transaction.type.toLowerCase();
+        const description = transaction.description?.toLowerCase() || '';
 
-     useEffect(() => {
-        // Fetch details if a transaction object is provided
+        // If the transaction is income AND the description says "on_account", use the special 'receivable' class.
+        if (type === 'income' && description.includes('on_account')) {
+            return 'receivable';
+        }
+        // For any other income, use the 'income' class.
+        if (type.includes('income')) {
+            return 'income';
+        }
+        // Otherwise, it's an 'expense'.
+        return 'expense';
+    };
+
+    useEffect(() => {
         if (transaction && transaction.id) {
             const fetchDetails = async () => {
                 setLoading(true);
                 setError('');
                 try {
-                    // --- CRITICAL FIX ---
-                    // Call the correct API endpoint using the transaction's OWN ID
                     const response = await api.get(`/transactions/details/${transaction.id}`);
-                    
-                    // The API returns an object { transaction, details }, so we just use the 'details' part
                     setDetails(response.data.details);
-
                 } catch (err) {
                     console.error("Failed to fetch transaction details", err);
                     setError("Could not load the operational details for this transaction.");
@@ -31,77 +40,87 @@ const TransactionDetailsModal = ({ transaction, onClose }) => {
                 }
             };
             fetchDetails();
-        } else {
-            // No transaction ID means nothing to fetch.
-            setLoading(false);
         }
     }, [transaction]);
 
-    // This function decides what to render based on the loaded data
-    const renderContent = () => {
-        if (loading) {
-            return <p>Loading details...</p>;
-        }
-        if (error) {
-            return <p className="alert-error">{error}</p>;
-        }
-        if (!details) {
-            return <p>No specific operational details are linked to this financial transaction.</p>;
-        }
+     const renderContent = () => {
+        if (loading) return <p>Loading details...</p>;
+        if (error) return <p className="alert-error">{error}</p>;
+        if (!details || details.type === 'Generic') return <p>No specific operational details are linked to this financial transaction.</p>;
 
-        // --- Render different views based on the `type` returned from the API ---
         switch (details.type) {
-            case 'sale':
+            case 'Sale':
+                // --- CRITICAL FIX FOR NaN: We now get the full sale item record ---
                 return (
                     <div className="details-section">
                         <h4>Sale #{details.sale_details.id}</h4>
                         <p><strong>Customer:</strong> {details.sale_details.customer_name || 'Cash Sale'}</p>
-                        <p><strong>Payment Method:</strong> {details.sale_details.payment_method}</p>
                         <h5>Items Sold:</h5>
                         <ul className="details-list">
-                            {details.line_items.map(item => (
+                            {details.items.map(item => (
                                 <li key={item.id}>
-                                    {item.quantity_sold} x {item.product_name}
+                                    {item.quantity_sold} x {item.product_name} @ R{parseFloat(item.price_at_sale || 0).toFixed(2)}
                                 </li>
                             ))}
                         </ul>
                     </div>
                 );
             
-            case 'scrap_purchase':
+            case 'Scrap Purchase':
                 return (
                     <div className="details-section">
-                        <h4>Scrap Payout</h4>
-                        <p><strong>Supplier:</strong> {details.supplier_name || 'Walk-in Supplier'}</p>
+                        <h4>Scrap Purchase Details</h4>
+                        <p><strong>Supplier:</strong> {details.supplier_name || 'Walk-in'}</p>
                         <h5>Materials Purchased:</h5>
                         <ul className="details-list">
-                            {details.purchase_items.map(item => (
-                                <li key={item.id}>
-                                    {item.weight_kg}kg of {item.product_name}
+                            {details.items.map((item, index) => (
+                                <li key={index}>
+                                    {item.product_name}: {item.weight_kg} kg for R{parseFloat(item.payout_amount || 0).toFixed(2)}
                                 </li>
                             ))}
                         </ul>
                     </div>
                 );
 
-            // You can add more `case` blocks here in the future for other types
-            // e.g., case 'stock_take':
+
+            case 'Stock Take':
+                 return (
+                    <div className="details-section">
+                        <h4>Stock Take Details</h4>
+                        <p><strong>Processed by:</strong> {details.user_name}</p>
+                         <h5>Adjustments:</h5>
+                        <ul className="details-list">
+                            {details.items && details.items.map((item, index) => (
+                                <li key={index}>
+                                    {item.product}: {item.variance} units (Value: R{parseFloat(item.value).toFixed(2)})
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                );
 
             default:
                 return <p>No specific details view available for this transaction type.</p>;
         }
     };
 
-    return (
+      return (
         <div className="transaction-details-content">
             <div className="details-header">
                 <div>
                     <strong>Date:</strong> {new Date(transaction.transaction_date).toLocaleString()} <br/>
                     <strong>Description:</strong> {transaction.description}
                 </div>
-                <div className={`details-amount ${transaction.type.includes('INCOME') ? 'income' : 'expense'}`}>
+                
+                {/* --- REPLACE THIS DIV'S CLASSNAME --- */}
+                {/* OLD: <div className={`details-amount ${transaction.type.includes('INCOME') ? 'income' : 'expense'}`}> */}
+                {/* NEW, smarter version: */}
+                <div className={`details-amount ${getAmountClass(transaction)}`}>
+
                     R {parseFloat(transaction.amount).toFixed(2)}
                 </div>
+                {/* --- END OF REPLACEMENT --- */}
+
             </div>
             <hr />
             <div className="details-body">

@@ -209,9 +209,9 @@ router.post('/:id/payment', authMiddleware, async (req, res) => {
 
         // 5. Update the master transaction ledger
         const paymentDescription = `Account payment from Customer ID #${customerId}`;
-        await client.query(
-            "INSERT INTO transactions (business_unit_id, amount, type, description, source_reference, customer_id) VALUES ($1, $2, 'INCOME', $3, $4, $5)",
-            [business_unit_id, total_amount, paymentDescription, `customer_payment:${newPaymentId}`, customerId]
+         await client.query(
+            "INSERT INTO transactions (business_unit_id, amount, type, description, source_reference, customer_id) VALUES ($1, $2, 'ACCOUNT_PAYMENT', $3, $4, $5)",
+            [business_unit_id, total_amount, description, `customer_payment:${customerId}`, customerId]
         );
         // 6. Loop back through the affected invoices to update their final status
         for (const alloc of allocations) {
