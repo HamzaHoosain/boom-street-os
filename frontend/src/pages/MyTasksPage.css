@@ -1,0 +1,65 @@
+/* frontend/src/pages/MyTasksPage.css */
+
+.task-list-container {
+    max-width: 900px;
+    margin: 2rem auto;
+}
+
+.task-list {
+    list-style: none;
+    padding: 0;
+}
+
+.task-item {
+    background-color: #38455e;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border-left: 5px solid #007bff; /* Default to blue for 'Pending' */
+}
+/* Optional: different colors for different statuses */
+.task-item.status-in-progress {
+    border-left-color: #ffc107;
+}
+
+.task-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.task-link {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #ffffff;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+.task-link:hover {
+    color: #72b2ff;
+    text-decoration: underline;
+}
+
+.task-status-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.85em;
+    background-color: #5a6b80;
+    color: #e0e0e0;
+}
+
+.task-description {
+    color: #d1d5db;
+    margin-bottom: 1rem;
+}
+
+.task-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85em;
+    color: #a0a0a0;
+    padding-top: 1rem;
+    border-top: 1px solid #4a5a70;
+}

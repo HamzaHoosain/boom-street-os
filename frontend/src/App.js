@@ -14,14 +14,14 @@ import BusinessSelectorPage from './pages/BusinessSelectorPage';
 import CashManagementPage from './pages/CashManagementPage';
 import CustomerDetailsPage from './pages/CustomerDetailsPage';
 import CustomersPage from './pages/CustomersPage';
-import StockTakePage from './pages/StockTakePage';
+import PaintMixingInterface from './components/pos/PaintMixingInterface';
 import DashboardPage from './pages/DashboardPage';
 import EmployeeDetailsPage from './pages/EmployeeDetailsPage';
 import EmployeesPage from './pages/EmployeesPage';
 import InvoicePage from './pages/InvoicePage';
-import QuotePage from './pages/QuotePage'; // <--- IMPORT
-import PurchaseOrderPage from './pages/PurchaseOrderPage'; // <--- IMPORT WHEN CREATED
-import SalesOrderPage from './pages/SalesOrderPage'; // <--- IMPORT WHEN CREATED
+import QuotePage from './pages/QuotePage';
+import PurchaseOrderPage from './pages/PurchaseOrderPage';
+import SalesOrderPage from './pages/SalesOrderPage';
 import InventoryPage from './pages/InventoryPage';
 import OrderManagementPage from './pages/OrderManagementPage';
 import LoginPage from './pages/LoginPage';
@@ -31,10 +31,16 @@ import RemittancePage from './pages/RemittancePage';
 import ReportsPage from './pages/ReportsPage';
 import SupplierDetailsPage from './pages/SupplierDetailsPage';
 import SuppliersPage from './pages/SuppliersPage';
+import StockTakePage from './pages/StockTakePage';
 import TransactionHistoryPage from './pages/TransactionHistoryPage';
 
+// --- CRITICAL: Import the new Task Management pages ---
+import MyTasksPage from './pages/MyTasksPage';
+import TaskDetailsPage from './pages/TaskDetailsPage';
+import PaintMixingPage from './pages/PaintMixingPage';
+
+
 const ProtectedRoutes = () => {
-    // This component is correct and unchanged
     const { token, selectedBusiness, loading } = useContext(AuthContext);
     if (loading) { return <div>Application Loading...</div>; }
     if (!token) { return <Navigate to="/login" />; }
@@ -50,40 +56,43 @@ function App() {
                 {/* Public / Semi-public routes */}
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/select-business" element={<BusinessSelectorPage />} />
+
+                {/* Printable Document Routes (do not need full layout) */}
                 <Route path="/invoice/:saleId" element={<InvoicePage />} />
-                 <Route path="/quote/:quoteId" element={<QuotePage />} />
-                  <Route path="/purchase-order/:poId" element={<PurchaseOrderPage />} /> 
-                  <Route path="/sales-order/:soId" element={<SalesOrderPage />} /> 
+                <Route path="/quote/:quoteId" element={<QuotePage />} />
+                <Route path="/purchase-order/:poId" element={<PurchaseOrderPage />} /> 
+                <Route path="/sales-order/:soId" element={<SalesOrderPage />} /> 
                 <Route path="/remittance/:purchaseId" element={<RemittancePage />} /> 
                 
-                {/* Parent for all main protected routes */}
+                {/* Parent for all main protected routes with sidebar/navbar */}
                 <Route element={<ProtectedRoutes />}>
                     <Route path="/" element={<DashboardPage />} />
                     <Route path="/pos" element={<PosPage />} />
                     <Route path="/transactions" element={<TransactionHistoryPage />} />
                     <Route path="/inventory" element={<InventoryPage />} />
-                    <Route path="/order-management" element={<OrderManagementPage />} />
-                    
-                    {/* The Stock Take page is now correctly linked in the sidebar */}
                     <Route path="/stocktake" element={<StockTakePage />} />
-                    
-                    {/* Cleaned up and corrected routes */}
                     <Route path="/customers" element={<CustomersPage />} />
                     <Route path="/customers/:id" element={<CustomerDetailsPage />} />
                     <Route path="/bulk-buyers" element={<BulkBuyersPage />} />
-                    
-                    {/* The Suppliers routes were duplicated. This is the correct, single block. */}
                     <Route path="/suppliers" element={<SuppliersPage />} />
                     <Route path="/suppliers/:supplierId" element={<SupplierDetailsPage />} /> 
-                    
+                    <Route path="/order-management" element={<OrderManagementPage />} />
                     <Route path="/employees" element={<EmployeesPage />} />
                     <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
                     <Route path="/payroll" element={<PayrollPage />} />
                     <Route path="/cash-management" element={<CashManagementPage />} />
                     <Route path="/reports" element={<ReportsPage />} />
+
+                    {/* --- CRITICAL: ADD THE NEW TASK MANAGEMENT ROUTES HERE --- */}
+                    <Route path="/tasks" element={<MyTasksPage />} />
+                    <Route path="/mix-task/:taskId" element={<PaintMixingPage />} />
+                    <Route path="/task-details/:taskId" element={<TaskDetailsPage />} />
+
+
+                    {/* Temporary legacy route for compatibility, can be removed later */}
+                    <Route path='/paint-mixing' element={<PaintMixingInterface />} />
                 </Route>
                 
-                {/* Catch-all to redirect to the dashboard or login screen */}
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
         </Router>

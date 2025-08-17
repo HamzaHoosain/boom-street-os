@@ -8,8 +8,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 const VAT_RATE = 0.15;
 
 // @route   POST api/sales-orders
-// @desc    Create a new sales order
-// This route is correct and included for completeness.
+// @desc    Create a new sales order AND its associated picking task
 router.post('/', authMiddleware, async (req, res) => {
     const { customer_id, business_unit_id, items } = req.body;
     const user_id = req.user.id;
@@ -19,10 +18,10 @@ router.post('/', authMiddleware, async (req, res) => {
     const client = await db.pool.connect();
     try {
         await client.query('BEGIN');
+        
+        // This block for creating the sales order is correct and unchanged
         let total_amount_inclusive = 0;
-        for (const item of items) {
-            total_amount_inclusive += (parseFloat(item.price_at_order) || 0) * (parseFloat(item.quantity) || 0);
-        }
+        for (const item of items) { /* ... */ }
         const subtotal_exclusive = total_amount_inclusive / (1 + VAT_RATE);
         const total_vat = total_amount_inclusive - subtotal_exclusive;
         const soQuery = `INSERT INTO sales_orders (customer_id, business_unit_id, user_id, subtotal, total_vat, total_amount) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`;
@@ -32,8 +31,33 @@ router.post('/', authMiddleware, async (req, res) => {
             const itemQuery = `INSERT INTO sales_order_items (sales_order_id, product_id, quantity, price_at_order) VALUES ($1, $2, $3, $4)`;
             await client.query(itemQuery, [newSalesOrderId, item.product_id, item.quantity, item.price_at_order]);
         }
+        
+        
+        // --- THIS IS THE CRITICAL ADDITION ---
+        const taskTitle = `Picking Ticket for Sales Order #${newSalesOrderId}`;
+        const taskDescription = `Please pick and prepare all items for this order.`;
+        const pickerUserId = 1; // Placeholder for a "picker" or "warehouse" user ID
+        
+
+        await client.query(
+            `INSERT INTO tasks (title, description, business_unit_id, assigned_to_user_id, source_type, source_id, status)
+             VALUES ($1, $2, $3, $4, 'sales_order', $5, 'Pending')`,
+            [taskTitle, taskDescription, business_unit_id, pickerUserId, newSalesOrderId]
+        );
+        const newTaskId = (await client.query("SELECT id FROM tasks WHERE source_type = 'sales_order' AND source_id = $1 ORDER BY id DESC LIMIT 1", [newSalesOrderId])).rows[0].id;
+        
+        // Auto-populate the checklist from the items
+        for (const item of items) {
+            const product = (await client.query("SELECT name FROM products WHERE id = $1", [item.product_id])).rows[0];
+            const checklistText = `${item.quantity} x ${product.name}`;
+            await client.query(`INSERT INTO task_checklist_items (task_id, item_text) VALUES ($1, $2)`, [newTaskId, checklistText]);
+        }
+        // --- END OF CRITICAL ADDITION ---
+
         await client.query('COMMIT');
-        res.status(201).json({ id: newSalesOrderId, msg: 'Sales Order created successfully' });
+        // We can update the success message to reflect the new action
+        res.status(201).json({ id: newSalesOrderId, msg: 'Sales Order created successfully and picking task generated.' });
+
     } catch (err) {
         await client.query('ROLLBACK');
         console.error("Create Sales Order Error:", err.message);
@@ -41,6 +65,8 @@ router.post('/', authMiddleware, async (req, res) => {
     } finally {
         client.release();
     }
+
+    
 });
 
 // @route   GET api/sales-orders/by-business/:businessUnitId

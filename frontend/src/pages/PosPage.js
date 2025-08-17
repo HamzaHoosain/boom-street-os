@@ -17,6 +17,7 @@ import PaymentModal from '../components/pos/PaymentModal';
 import ChargeToAccountModal from '../components/pos/ChargeToAccountModal';
 import SearchBar from '../components/common/SearchBar';
 import PosLayout from '../components/pos/PosLayout';
+import PaintMixingInterface from '../components/pos/PaintMixingInterface';
 import '../components/pos/Pos.css';
 
 // --- Re-usable Form for the Expense Mode ---
@@ -99,7 +100,7 @@ const PosPage = () => {
 
      const availableModes = [];
     if (selectedBusiness?.type?.includes('Retail')) {
-        availableModes.push('sell');
+         availableModes.push('sell', 'mix'); // <-- ADD 'mix'
     }
     if (selectedBusiness?.type === 'Bulk Inventory') {
         availableModes.push('buy');
@@ -557,7 +558,8 @@ const PosPage = () => {
                 </div>
             )}
             
-            {mode === 'expense' ? ( <ExpenseForm onLogExpense={handleLogExpense} /> ) : ( 
+            {mode === 'expense' ? ( <ExpenseForm onLogExpense={handleLogExpense} /> ) : 
+                 mode === 'mix' ? ( <PaintMixingInterface /> ) : (
                 <PosLayout 
                     leftPanel={null}
                     mainContent={mainContentPanel}

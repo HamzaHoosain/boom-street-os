@@ -16,6 +16,10 @@ const expensesRoutes = require('./routes/expenses');
 const invoicesRoutes = require('./routes/invoices');
 const remittancesRoutes = require('./routes/remittances'); // Correctly defined here
 const logisticsRoutes = require('./routes/logistics');
+const recipesRoutes = require('./routes/recipes'); // New route for recipes
+const mixingRoutes = require('./routes/mixing'); // New route for mixing
+const tasksRoutes = require('./routes/tasks');
+
 // Assuming a panelbeating route file exists
 // const panelbeatingRoutes = require('./routes/panelbeating'); 
 const payrollRoutes = require('./routes/payroll');
@@ -43,6 +47,9 @@ app.use('/api/purchase-orders', purchaseOrdersRoutes);
 app.use('/api/sales-orders', salesOrdersRoutes);
 app.use('/api/cash', cashRoutes);
 app.use('/api/customers', customersRoutes);
+app.use('/api/recipes', recipesRoutes);
+app.use('/api/mixing', mixingRoutes); // New route for mixing
+app.use('/api/tasks', tasksRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/expenses', expensesRoutes);
 app.use('/api/invoices', invoicesRoutes);

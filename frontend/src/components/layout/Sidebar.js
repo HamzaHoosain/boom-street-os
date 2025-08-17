@@ -38,6 +38,7 @@ const Sidebar = () => {
                 {isRetail && (
                     <>
                         <li><NavLink to="/customers">Customers</NavLink></li>
+                          <li><NavLink to="/tasks">My Tasks</NavLink></li>
                         {/* You can add more retail-only links here, like Panel Beating */}
                         {/* <li><NavLink to="/panel-beating">Panel Beating</NavLink></li> */}
                     </>

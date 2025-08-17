@@ -1,0 +1,92 @@
+/* frontend/src/pages/TaskDetailsPage.css */
+
+.task-details-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.task-details-page h1 {
+    margin-top: 0;
+}
+
+.task-page-description {
+    font-size: 1.1em;
+    color: #a0a0a0;
+    margin-bottom: 2rem;
+}
+
+.task-details-container {
+    background-color: #38455e;
+    padding: 1.5rem 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.checklist-container h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #4a5a70;
+}
+
+.checklist {
+    list-style: none;
+    padding: 0;
+}
+
+.checklist li {
+    display: flex;
+    align-items: center;
+    padding: 12px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-bottom: 5px;
+    border: 1px solid transparent;
+}
+.checklist li:hover {
+    background-color: #4a5a70;
+}
+
+.checklist li.completed {
+    background-color: rgba(74, 222, 128, 0.1);
+    border-color: rgba(74, 222, 128, 0.2);
+}
+
+.checklist li.completed span {
+    text-decoration: line-through;
+    color: #a0a0a0;
+}
+
+.checkbox {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #5a6b80;
+    border-radius: 4px;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #4ade80; /* Green checkmark */
+    flex-shrink: 0;
+}
+
+.checklist li.completed .checkbox {
+    background-color: #4ade80;
+    border-color: #4ade80;
+    color: #2e3a4e; /* Dark background color for contrast */
+}
+
+.btn-complete-task {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2em;
+    font-weight: 700;
+}
+
+.btn-complete-task:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
