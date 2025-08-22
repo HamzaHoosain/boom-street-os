@@ -1,0 +1,26 @@
+/* frontend/src/components/orders/ReceiveStockModal.css */
+
+.receive-stock-list {
+    margin-top: 1.5rem;
+    max-height: 40vh; /* Make the list scrollable if it's very long */
+    overflow-y: auto;
+    padding-right: 10px; /* Space for scrollbar */
+}
+
+.receive-stock-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.receive-stock-item label {
+    font-weight: 600;
+    flex-grow: 1; /* Allow the label to take up available space */
+}
+
+.receive-stock-item .form-control {
+    max-width: 120px; /* Constrain the width of the input box */
+    text-align: right;
+}

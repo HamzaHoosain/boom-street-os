@@ -20,11 +20,9 @@ const Cart = ({
     const currentRole = selectedBusiness?.role_name;
     const prevCartLength = useRef(cartItems.length);
     
-    // State for inline price editing
     const [editingPriceCartId, setEditingPriceCartId] = useState(null);
     const [editedPrice, setEditedPrice] = useState('');
 
-    // Autofocus logic for quantity inputs in cost-based modes or when adding to a PO
     useEffect(() => {
         if ((isCostMode || mode === 'buy') && cartItems.length > prevCartLength.current) {
             const lastItem = cartItems[cartItems.length - 1];
@@ -39,7 +37,6 @@ const Cart = ({
         prevCartLength.current = cartItems.length;
     }, [cartItems, isCostMode, mode]);
     
-    // --- Helper to get dynamic UI text based on the current mode ---
     const getUIText = () => {
         switch(mode) {
             case 'quote':
@@ -52,7 +49,7 @@ const Cart = ({
                 return { title: 'Current Purchase', totalLabel: 'Total Payout:', buttonText: 'Process Payout' };
             case 'sell':
             default:
-                return { title: 'Current Sale', totalLabel: 'Total:', buttonText: 'Process Sale' };
+                return { title: 'Current Sale', totalLabel: 'Total Due:', buttonText: 'Process Sale' };
         }
     };
     const { title, totalLabel, buttonText } = getUIText();
@@ -64,7 +61,6 @@ const Cart = ({
         return (parseFloat(price) * (parseFloat(item.quantity) || 0)).toFixed(2);
     };
 
-    // Handlers for the sleek, inline price editor
     const handlePriceClick = (item) => {
         if (!canOverridePrice) return;
         setEditingPriceCartId(item.cartId);
@@ -98,8 +94,6 @@ const Cart = ({
                         <li key={item.cartId} className={item.lowStockWarning ? 'low-stock-warning' : ''}>
                             <div className="cart-item-main-line">
                                 <span className="cart-item-name">{item.name}</span>
-                                
-                                {/* --- Price display with inline editing --- */}
                                 {editingPriceCartId === item.cartId ? (
                                     <input
                                         type="number"
@@ -115,14 +109,11 @@ const Cart = ({
                                         R {getItemTotal(item)}
                                     </span>
                                 )}
-
                                 <button className="remove-item-btn" onClick={() => onRemoveFromCart(item)}>×</button>
                             </div>
                             
                             <div className="cart-item-sub-line">
                                 {item.lowStockWarning && <span className="stock-warning-label">Low Stock! (On Hand: {item.quantity_on_hand})</span>}
-                                
-                                {/* Quantity input for modes where it's editable */}
                                 {isCostMode || mode === 'buy' || mode.includes('order') || mode === 'quote' ? (
                                     <div className="quantity-control-wrapper-simple">
                                         <span>Qty:</span>
@@ -144,15 +135,29 @@ const Cart = ({
                 </ul>
             )}
 
-            <div className="cart-summary">
-                {isCostMode || mode === 'buy' ? (
-                    <strong>{totalLabel} R {subtotalPreVat.toFixed(2)}</strong>
+           <div className="cart-summary">
+                {/* --- REPLACE THIS ENTIRE LOGIC BLOCK --- */}
+                {mode === 'buy' ? (
+                    // "Buy" mode is an immediate payout, typically shown without VAT breakdown on the screen
+                    <div className="summary-line final-total">
+                        <strong>{totalLabel}</strong>
+                        <strong>R {subtotalPreVat.toFixed(2)}</strong>
+                    </div>
                 ) : (
                     <>
-                        <p>Subtotal (Excl. VAT): R {subtotalPreVat.toFixed(2)}</p>
-                        <p>VAT ({Math.round(vatRate * 100)}%): R {totalVatAmount.toFixed(2)}</p>
-                        <hr/>
-                        <strong>Total Due: R {grandTotal.toFixed(2)}</strong>
+                        <div className="summary-line">
+                            <span>Subtotal (Excl. VAT):</span>
+                            <span>R {subtotalPreVat.toFixed(2)}</span>
+                        </div>
+                        <div className="summary-line">
+                            <span>VAT ({Math.round(vatRate * 100)}%):</span>
+                            <span>R {totalVatAmount.toFixed(2)}</span>
+                        </div>
+                        <hr className="summary-divider" />
+                        <div className="summary-line final-total">
+                            <strong>{totalLabel}</strong>
+                            <strong>R {grandTotal.toFixed(2)}</strong>
+                        </div>
                     </>
                 )}
             </div>

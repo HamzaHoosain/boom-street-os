@@ -74,9 +74,17 @@ const PurchaseOrderPage = () => {
             <hr className="receipt-hr" />
 
             <section className="totals-section">
+                <div className="summary-line">
+                    <span>Sub-Total (Excl. VAT):</span>
+                    <span>R {(parseFloat(po_details.total_amount) - parseFloat(po_details.total_vat_amount)).toFixed(2)}</span>
+                </div>
+                <div className="summary-line">
+                    <span>VAT @ 15%:</span>
+                    <span>R {parseFloat(po_details.total_vat_amount).toFixed(2)}</span>
+                </div>
                 <div className="final-total-line">
-                    <span>TOTAL (COST):</span>
-                    <span>R{parseFloat(po_details.total_amount).toFixed(2)}</span>
+                    <span>TOTAL (Incl. VAT):</span>
+                    <span>R {parseFloat(po_details.total_amount).toFixed(2)}</span>
                 </div>
             </section>
             

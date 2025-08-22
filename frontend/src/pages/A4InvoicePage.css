@@ -1,0 +1,66 @@
+/* frontend/src/pages/A4InvoicePage.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700;900&display=swap');
+
+/* Base Styles */
+body {
+    font-family: 'Lato', sans-serif;
+    color: #333;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f2f5;
+}
+/* Invoice Container */
+.invoice-container {
+    width: 210mm;
+    min-height: 297mm;
+    margin: 20px auto;
+    padding: 30px 40px;
+    background-color: #fff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+}
+/* Header */
+.invoice-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+}
+/* Items Table */
+.invoice-items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 25px;
+    flex-grow: 1; /* Pushes footer down */
+}
+.invoice-items-table th, .invoice-items-table td {
+    padding: 10px 15px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+.invoice-items-table th { background-color: #f8f8f8; font-weight: 700; text-transform: uppercase; font-size: 0.85em; }
+.invoice-items-table .qty-col, .invoice-items-table .unit-price-col, .invoice-items-table .total-col { text-align: right; }
+
+/* Footer & Summary */
+.invoice-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding-top: 25px;
+    border-top: 2px solid #ccc;
+    margin-top: auto; /* Ensures it stays at the bottom */
+}
+.invoice-summary { width: 300px; text-align: right; }
+.summary-line { display: flex; justify-content: space-between; margin-bottom: 5px; }
+.summary-divider { border: none; border-top: 1px dashed #ddd; margin: 10px 0; }
+.final-total-line { font-size: 1.4em; font-weight: 900; }
+
+@media print { /* Print styles */
+    body { background-color: white; margin: 0; padding: 0; }
+    .invoice-container { width: 100%; margin: 0; box-shadow: none; }
+}
