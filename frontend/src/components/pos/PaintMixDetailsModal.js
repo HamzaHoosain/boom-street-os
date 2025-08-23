@@ -1,9 +1,9 @@
 // frontend/src/components/pos/PaintMixDetailsModal.js
-import React, { useState } from 'react';
-// Import a new CSS file we will create
+
+import React, { useState, useEffect } from 'react';
 import './PaintMixDetailsModal.css';
 
-const PaintMixDetailsModal = ({ onSave, onClose, initialDetails = {} }) => {
+const PaintMixDetailsModal = ({ onSave, onClose, initialDetails = {}, initialPrice }) => {
     const [details, setDetails] = useState({
         paint_type: initialDetails.paint_type || '',
         quantity: initialDetails.quantity || '1',
@@ -11,35 +11,67 @@ const PaintMixDetailsModal = ({ onSave, onClose, initialDetails = {} }) => {
         color_code: initialDetails.color_code || '',
     });
 
+    // NEW: State for the total price input
+    const [totalPrice, setTotalPrice] = useState(initialPrice ? initialPrice.toFixed(2) : '');
+
     const handleChange = (e) => {
         setDetails({ ...details, [e.target.name]: e.target.value });
     };
 
     const handleConfirm = () => {
         if (!details.paint_type || !details.quantity || parseFloat(details.quantity) <= 0) {
-            alert("Please select a Paint Type and enter a valid Quantity.");
+            alert("Please select or enter a Paint Type and a valid Quantity.");
             return;
         }
-        onSave(details);
+        // Pass both the details AND the new total price back to the parent
+        onSave(details, parseFloat(totalPrice) || null);
     };
 
     return (
         <div className="paint-mix-modal-content">
             <h4>Enter Paint Mix Details</h4>
+            
+            {/* --- THIS IS THE NEW EDITABLE DROPDOWN --- */}
             <div className="form-group">
                 <label>Paint Type*</label>
-                <select name="paint_type" value={details.paint_type} onChange={handleChange} className="form-control" required autoFocus>
-                    <option value="" disabled>-- Select --</option>
-                    <option value="2K">2K</option>
-                    <option value="Basecoat">Basecoat</option>
-                    <option value="QD Enamel">QD Enamel</option>
-                    <option value="Road Marking">Road Marking</option>
-                </select>
+                <input
+                    list="paint-types"
+                    name="paint_type"
+                    value={details.paint_type}
+                    onChange={handleChange}
+                    className="form-control"
+                    placeholder="e.g., Basecoat, 2K, etc."
+                    required
+                    autoFocus
+                />
+                <datalist id="paint-types">
+                    <option value="2K" />
+                    <option value="Basecoat" />
+                    <option value="QD Enamel" />
+                    <option value="Water-Based" />
+                    <option value="Industrial" />
+                </datalist>
             </div>
+            
             <div className="form-group">
                 <label>Quantity (Liters)*</label>
                 <input name="quantity" type="number" step="0.01" value={details.quantity} onChange={handleChange} className="form-control" required />
             </div>
+
+            {/* --- NEW: TOTAL PRICE INPUT --- */}
+             <div className="form-group">
+                <label>Total Price (VAT Incl.)</label>
+                <input 
+                    name="total_price" 
+                    type="number" 
+                    step="0.01" 
+                    value={totalPrice} 
+                    onChange={(e) => setTotalPrice(e.target.value)} 
+                    placeholder="Enter final price..."
+                    className="form-control" 
+                />
+            </div>
+
 
             <hr className="modal-divider" />
             
@@ -55,7 +87,7 @@ const PaintMixDetailsModal = ({ onSave, onClose, initialDetails = {} }) => {
 
             <div className="modal-actions">
                 <button type="button" onClick={onClose} className="btn-secondary">Cancel</button>
-                <button onClick={handleConfirm} className="btn-login">Confirm Details</button>
+                <button onClick={handleConfirm} className="btn-login">Confirm & Update Cart</button>
             </div>
         </div>
     );

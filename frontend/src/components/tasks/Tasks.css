@@ -1,0 +1,69 @@
+/* frontend/src/components/tasks/Tasks.css */
+
+.checklist-container {
+    background-color: #4a5a70;
+    padding: 1.5rem;
+    border-radius: 6px;
+}
+
+.checklist-container h3 {
+    margin-top: 0;
+    color: #fff;
+}
+
+.checklist {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 1.5rem;
+}
+
+.checklist li {
+    display: flex;
+    align-items: center;
+    padding: 12px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    margin-bottom: 5px;
+    background-color: #38455e;
+}
+
+.checklist li:hover {
+    background-color: #5a6b80;
+}
+
+.checklist li.completed {
+    background-color: rgba(74, 222, 128, 0.15);
+}
+
+.checklist li.completed span {
+    text-decoration: line-through;
+    color: #a0a0a0;
+}
+
+.checkbox {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #5a6b80;
+    border-radius: 4px;
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #4ade80; /* Green checkmark */
+    flex-shrink: 0;
+}
+
+.checklist li.completed .checkbox {
+    background-color: #4ade80;
+    border-color: #4ade80;
+    color: #2e3a4e; /* Dark background color for contrast */
+}
+
+.btn-complete-task {
+    width: 100%;
+    padding: 15px;
+    font-size: 1.2em;
+    font-weight: 700;
+}

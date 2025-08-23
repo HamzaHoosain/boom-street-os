@@ -1,101 +1,109 @@
-// frontend/src/pages/TaskDetailsPage.js
-
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import api from '../services/api';
-import './TaskDetailsPage.css'; // New CSS file
+
+// --- NEW: We will import our specialized action modals here ---
+import PaintMixingModal from '../components/tasks/PaintMixingModal';
+import PickingChecklist from '../components/tasks/PickingChecklist';
+
+import Modal from '../components/layout/Modal';
+import './TaskDetailsPage.css';
 
 const TaskDetailsPage = () => {
     const { taskId } = useParams();
     const navigate = useNavigate();
 
     const [task, setTask] = useState(null);
-    const [checklistItems, setChecklistItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     
+    // --- State to control which, if any, action modal is open ---
+    const [activeModal, setActiveModal] = useState(null); // e.g., 'mixing', 'delivery'
+
+    // This fetching logic is simple and correct
     useEffect(() => {
-        const fetchData = async () => {
+        const fetchTask = async () => {
             setLoading(true);
             try {
-                // You will need this backend route: GET /api/tasks/:id/checklist
-                const [taskRes, checklistRes] = await Promise.all([
-                    api.get(`/tasks/${taskId}`),
-                    api.get(`/tasks/${taskId}/checklist`) 
-                ]);
-                setTask(taskRes.data);
-                setChecklistItems(checklistRes.data);
-            } catch (err) {
-                setError("Failed to load task details.");
-            } finally {
-                setLoading(false);
-            }
+                const response = await api.get(`/tasks/${taskId}`);
+                setTask(response.data);
+            } catch (err) { setError("Failed to load task details."); }
+            finally { setLoading(false); }
         };
-        fetchData();
+        fetchTask();
     }, [taskId]);
     
-    const handleChecklistItemToggle = (itemId) => {
-        setChecklistItems(prevItems =>
-            prevItems.map(item =>
-                item.id === itemId ? { ...item, is_completed: !item.is_completed } : item
-            )
-        );
-    };
-    
+    // --- NEW: Handler to mark the main task as "Completed" ---
+    // This is for simple tasks or the final step in a multi-part workflow.
     const handleCompleteTask = async () => {
+        if (!window.confirm("Are you sure you want to mark this task as complete?")) return;
+        
         try {
-            // Call the new backend endpoint, passing the state of the checklist
-            await api.put(`/tasks/${taskId}/complete`, { checklistItems });
-            alert("Task Completed! The next step in the workflow has been triggered.");
-            navigate('/tasks'); // Go back to the main task list
-        } catch (err) {
-            alert("Error completing task.");
+            // Using a simple endpoint for now. It can be made more complex later.
+            await api.put(`/tasks/${task.id}/status`, { status: 'Completed' });
+            alert("Task completed!");
+            navigate('/tasks');
+        } catch(err) {
+            alert("Error updating task status.");
         }
     };
     
+    // --- This function renders the context-specific action UI ---
+    const renderActionSection = () => {
+        if (!task) return null;
+
+        switch (task.source_type) {
+            case 'sale_item': // This is our paint mixing task
+                return (
+                    <div className="task-actions">
+                        <button onClick={() => setActiveModal('mixing')} className="btn-action primary">
+                            Log Ingredients & Complete
+                        </button>
+                    </div>
+                );
+            
+            case 'sales_order': // This is our picking ticket task
+                return (
+                    <div className="task-actions">
+                        {/* We embed the checklist component directly */}
+                        <PickingChecklist taskId={task.id} businessUnitId={task.business_unit_id} />
+                    </div>
+                );
+            
+            // Add cases for 'delivery_run', etc. here in the future
+                
+            default:
+                return (
+                    <div className="task-actions">
+                        <button onClick={handleCompleteTask} className="btn-action">
+                            Mark as Complete
+                        </button>
+                    </div>
+                );
+        }
+    };
+
     if (loading) return <p>Loading task...</p>;
     if (error) return <p className="alert-error">{error}</p>;
 
-    const allItemsChecked = checklistItems.every(item => item.is_completed);
-
     return (
         <div className="task-details-page">
-            <Link to="/tasks">← Back to My Tasks</Link>
+            <Link to="/tasks" className="back-link">← Back to My Tasks</Link>
             <h1>{task?.title}</h1>
             <p className="task-page-description">{task?.description}</p>
             
-            <div className="task-details-container">
-                {checklistItems.length > 0 && (
-                    <div className="checklist-container">
-                        <h3>Picking Checklist</h3>
-                        <ul className="checklist">
-                            {checklistItems.map(item => (
-                                <li key={item.id} onClick={() => handleChecklistItemToggle(item.id)} className={item.is_completed ? 'completed' : ''}>
-                                    <div className="checkbox">{item.is_completed && '✓'}</div>
-                                    <span>{item.item_text}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-
-                {/* This section can be expanded for delivery tasks with POD capture */}
-                {task?.source_type === 'delivery_run' && (
-                    <div className="delivery-details-container">
-                        <h3>Delivery Actions</h3>
-                        {/* Placeholder for future delivery note and signature pad */}
-                        <p>Delivery information and Proof of Delivery capture will appear here.</p>
-                    </div>
-                )}
-            </div>
-
-            <button 
-                onClick={handleCompleteTask} 
-                className="btn-complete-task"
-                disabled={!allItemsChecked && checklistItems.length > 0}
-            >
-                Mark Task as Complete
-            </button>
+            {/* The main action area is now dynamic */}
+            {renderActionSection()}
+            
+            {/* --- Modals for specialized actions --- */}
+            {activeModal === 'mixing' && task &&
+                <Modal show={true} onClose={() => setActiveModal(null)} title={`Log Ingredients for ${task.title}`}>
+                    <PaintMixingModal 
+                        task={task}
+                        onClose={() => setActiveModal(null)}
+                    />
+                </Modal>
+            }
         </div>
     );
 };

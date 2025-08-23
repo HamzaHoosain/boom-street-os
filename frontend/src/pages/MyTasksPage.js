@@ -29,15 +29,12 @@ const MyTasksPage = () => {
     }, []);
 
     const renderTaskLink = (task) => {
-        // This is the router. It makes specific task types clickable.
-        switch (task.source_type) {
-            case 'sale_item':
-                return <Link to={`/task/${task.id}`} className="task-link">{task.title}</Link>;
-            // Add more cases here for other task types in the future
-            // e.g., case 'purchase_order': return <Link to={`/receive-po/${task.id}`...
-            default:
-                return <span>{task.title}</span>; // Non-clickable for generic tasks
+        // Now, all clickable task types go to the SAME page.
+        if (task.source_type === 'sale_item' || task.source_type === 'sales_order') {
+            return <Link to={`/task/${task.id}`} className="task-link">{task.title}</Link>;
         }
+        // ... any future clickable types
+        return <span>{task.title}</span>; // Default for non-actionable tasks
     };
 
     if (loading) return <p>Loading your tasks...</p>;

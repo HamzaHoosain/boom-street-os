@@ -126,4 +126,19 @@ router.post('/', authMiddleware, async (req, res) => {
     }
 });
 
+// Add this to backend/routes/tasks.js
+// @route   GET api/tasks/:id/checklist
+// @desc    Get all checklist items for a specific task
+router.get('/:id/checklist', authMiddleware, async (req, res) => {
+    const { id: taskId } = req.params;
+    try {
+        const query = "SELECT * FROM task_checklist_items WHERE task_id = $1 ORDER BY id";
+        const items = await db.query(query, [taskId]);
+        res.json(items.rows);
+    } catch (err) {
+        console.error("Get Checklist Error:", err.message);
+        res.status(500).send("Server Error");
+    }
+});
+
 module.exports = router;

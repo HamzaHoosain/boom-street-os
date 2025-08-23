@@ -88,8 +88,7 @@ function App() {
 
                     {/* --- CRITICAL: ADD THE NEW TASK MANAGEMENT ROUTES HERE --- */}
                     <Route path="/tasks" element={<MyTasksPage />} />
-                    <Route path="/mix-task/:taskId" element={<PaintMixingPage />} />
-                    <Route path="/task-details/:taskId" element={<TaskDetailsPage />} />
+                    <Route path="/task/:taskId" element={<TaskDetailsPage />} />
                     {/* --- END OF CRITICAL ADDITION --- */}
                 </Route>
                 

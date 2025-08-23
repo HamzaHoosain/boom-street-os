@@ -120,10 +120,11 @@ const PosPage = () => {
         setCustomerDetails({ favourites: [], customPrices: {} });
     };
     
-    useEffect(() => {
+     useEffect(() => {
         let defaultMode = selectedBusiness?.type === 'Bulk Inventory' ? 'buy' : 'sell';
         setMode(defaultMode);
 
+        
         if (selectedBusiness?.business_unit_id) {
             resetState();
             const fetchData = async () => {
@@ -136,7 +137,15 @@ const PosPage = () => {
                     setSafes(safesRes.data);
 
                     if (selectedBusiness.type === 'Bulk Inventory') { // Scrapyard
-                        const suppliersRes = await api.get(`/suppliers/by-business/${selectedBusiness.business_unit_id}`);
+                        
+                        // --- THIS IS THE CRITICAL FIX ---
+                        // OLD, incorrect line:
+                        // const suppliersRes = await api.get(`/suppliers/by-business/${selectedBusiness.business_unit_id}`);
+                        
+                        // NEW, correct line that matches your backend route:
+                        const suppliersRes = await api.get(`/suppliers?businessUnitId=${selectedBusiness.business_unit_id}`);
+                        // --- END OF FIX ---
+                        
                         setSuppliers(suppliersRes.data);
                     } else { // Retail
                         const categoriesRes = await api.get(`/categories/${selectedBusiness.business_unit_id}`);
@@ -150,6 +159,7 @@ const PosPage = () => {
             fetchData();
         }
     }, [selectedBusiness]);
+
 
     useEffect(() => {
         if (selectedBusiness?.type === 'Bulk Inventory' && safes.length > 0 && suppliers.length > 0) {
@@ -383,19 +393,26 @@ const PosPage = () => {
         }
     };
 
-      const handleSaveMixDetails = (mixDetails) => {
-        // Take the activeCartItem we stored, which has the product info,
-        // and combine it with the details from the modal.
-        const finalCartItem = {
-            ...activeCartItem,
-            quantity: parseFloat(mixDetails.quantity),
-            mixDetails // Attach the full details object
-        };
+      const handleSaveMixDetails = (mixDetails, newPrice) => {
+        // Find the original item that was being worked on
+        const itemToUpdate = activeCartItem;
         
-        // Now, add the fully formed item to the cart.
-        setCartItems(prev => [...prev, finalCartItem]);
+        // Create the updated item
+        const finalCartItem = {
+            ...itemToUpdate,
+            quantity: parseFloat(mixDetails.quantity),
+            mixDetails: mixDetails,
+        };
 
-        // Clean up and close the modal.
+        // If a new total price was entered, calculate the new price per unit
+        if (newPrice !== null && newPrice > 0) {
+            finalCartItem.selling_price = newPrice / parseFloat(mixDetails.quantity);
+        }
+
+        // Add the fully formed item to the cart (this logic is correct)
+        // Note: this assumes you add one mixed item at a time, not update existing ones
+        setCartItems(prev => [...prev.filter(item => item.cartId !== activeCartItem.cartId), finalCartItem]);
+
         setShowMixModal(false);
         setActiveCartItem(null);
     };
@@ -551,11 +568,13 @@ const PosPage = () => {
             <Modal show={showSupplierModal} onClose={() => setShowSupplierModal(false)} title="Select a Supplier">
                 <SupplierSearchModal onSelect={handleSelectSupplier} onClose={() => setShowSupplierModal(false)} selectedBusiness={selectedBusiness} />
             </Modal>
-            <Modal show={showMixModal} onClose={() => setShowMixModal(false)} title="Enter Mixed Paint Details">
+             <Modal show={showMixModal} onClose={() => setShowMixModal(false)} title="Enter Mixed Paint Details">
                 <PaintMixDetailsModal 
                     onSave={handleSaveMixDetails}
                     onClose={() => setShowMixModal(false)}
                     initialDetails={activeCartItem?.mixDetails}
+                    // --- ADD THIS NEW PROP ---
+                    initialPrice={activeCartItem ? parseFloat(activeCartItem.selling_price) * parseFloat(activeCartItem.quantity) : 0}
                 />
             </Modal>
             <Modal show={showPaymentModal} onClose={() => setShowPaymentModal(false)} title="Payment">
