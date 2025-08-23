@@ -7,31 +7,51 @@ const authMiddleware = require('../middleware/authMiddleware');
 // --- EMPLOYEE PROFILE MANAGEMENT (CRUD) ---
 // ----------------------------------------------------------------
 
+// @route   POST api/payroll/employees
+// @desc    Create a new employee profile and link it to a user
 router.post('/employees', authMiddleware, async (req, res) => {
+    // --- THIS IS THE CRITICAL FIX ---
     const { user_id, business_unit_id, hourly_rate, default_hours_per_period } = req.body;
     try {
         const newEmployee = await db.query(
+            // The user_id is now correctly included in the insert statement
             "INSERT INTO employees (user_id, business_unit_id, hourly_rate, default_hours_per_period) VALUES ($1, $2, $3, $4) RETURNING *",
             [user_id, business_unit_id, hourly_rate, default_hours_per_period]
         );
         res.status(201).json(newEmployee.rows[0]);
     } catch (err) {
+        if (err.code === '23505') { // Handles unique constraint violation
+            return res.status(400).json({ msg: 'This user is already registered as an employee.' });
+        }
         console.error("Create Employee Error:", err.message);
         res.status(500).send('Server Error');
     }
 });
 
+// @route   GET api/payroll/employees
+// @desc    Get all employees, but now filtered by the active business
 router.get('/employees', authMiddleware, async (req, res) => {
+    const { businessUnitId } = req.query; // Expect business unit ID from the frontend
+    
+    // --- THIS IS THE TENANT-AWARE FIX ---
     try {
-        const query = `
+        let query = `
             SELECT e.id, e.user_id, u.first_name, u.last_name, 
                    bu.name as business_unit_name, e.hourly_rate, e.default_hours_per_period 
             FROM employees e
             JOIN users u ON e.user_id = u.id
             JOIN business_units bu ON e.business_unit_id = bu.id
-            ORDER BY u.first_name
         `;
-        const employees = await db.query(query);
+        let queryParams = [];
+
+        // If a specific business unit is requested, filter by it.
+        if (businessUnitId && businessUnitId !== 'overview') {
+            query += ' WHERE e.business_unit_id = $1';
+            queryParams.push(businessUnitId);
+        }
+        query += ' ORDER BY u.first_name';
+        
+        const employees = await db.query(query, queryParams);
         res.json(employees.rows);
     } catch (err) {
         console.error("Get Employees Error:", err.message);

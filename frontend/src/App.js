@@ -25,7 +25,6 @@ import SalesOrderPage from './pages/SalesOrderPage';
 import InventoryPage from './pages/InventoryPage';
 import OrderManagementPage from './pages/OrderManagementPage';
 import LoginPage from './pages/LoginPage';
-import PayrollPage from './pages/PayrollPage';
 import PosPage from './pages/PosPage';
 import RemittancePage from './pages/RemittancePage'; 
 import ReportsPage from './pages/ReportsPage';
@@ -82,7 +81,6 @@ function App() {
                     <Route path="/order-management" element={<OrderManagementPage />} />
                     <Route path="/employees" element={<EmployeesPage />} />
                     <Route path="/employees/:id" element={<EmployeeDetailsPage />} />
-                    <Route path="/payroll" element={<PayrollPage />} />
                     <Route path="/cash-management" element={<CashManagementPage />} />
                     <Route path="/reports" element={<ReportsPage />} />
 
