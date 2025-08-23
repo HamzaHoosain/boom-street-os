@@ -62,26 +62,33 @@ router.post('/', authMiddleware, async (req, res) => {
             const newSaleItemId = saleItemResult.rows[0].id;
             
              // The frontend now sends a special `mixDetails` object ONLY for mixed paints.
-            if (item.mixDetails) {
-                // 1. Create the generic task for the mixer.
-                const taskTitle = `Mix Paint: ${item.mixDetails.quantity}L of ${item.mixDetails.color_code || product.name}`;
-                const taskDescription = `For Sale #${newSaleId}. Type: ${item.mixDetails.paint_type}, Brand: ${item.mixDetails.brand || 'Any'}`;
+             if (product.is_ingredient === false) {
+                const productName = product.name;
+                const taskTitle = `Mix Paint: ${item.quantity}L of ${productName}`;
+                const taskDescription = `For Sale #${newSaleId}. Please log ingredients.`;
+
+                // Step A: Find the "Paint Mixer" role ID for this business.
+                // (Assumes you have a role named 'Paint Mixer' in your 'roles' table)
+                const roleRes = await client.query("SELECT id FROM roles WHERE role_name = 'Paint Mixer'");
+                if (roleRes.rows.length === 0) { throw new Error("System configuration error: 'Paint Mixer' role not found."); }
+                const paintMixerRoleId = roleRes.rows[0].id;
                 
-                // CRITICAL FIX: Ensure this is a real user ID from your users table.
-                const paintMixerUserId = 3; 
-
-                const taskResult = await client.query(
-                    `INSERT INTO tasks (title, description, business_unit_id, assigned_to_user_id, source_type, source_id, status)
-                     VALUES ($1, $2, $3, $4, 'paint_mixing_job', $5, 'Pending') RETURNING id`,
-                    [taskTitle, taskDescription, business_unit_id, paintMixerUserId, newSaleItemId]
+                // Step B: Find a user who IS assigned that role IN THIS business unit.
+                const userRes = await client.query(
+                    `SELECT user_id FROM user_role_assignments 
+                     WHERE role_id = $1 AND business_unit_id = $2 
+                     LIMIT 1`, // Assign to the first available mixer. Can be enhanced later.
+                    [paintMixerRoleId, business_unit_id]
                 );
-                const newTaskId = taskResult.rows[0].id;
 
-                // 2. Create the specific, detailed paint mixing job record, linking it to the task.
+                if (userRes.rows.length === 0) { throw new Error(`No user with the 'Paint Mixer' role is assigned to this business unit.`); }
+                const assignedUserId = userRes.rows[0].user_id;
+
+                // Step C: Create the task with the dynamically found user ID.
                 await client.query(
-                    `INSERT INTO paint_mixing_jobs (sale_item_id, task_id, paint_type, brand, color_code, quantity_to_mix)
-                     VALUES ($1, $2, $3, $4, $5, $6)`,
-                    [newSaleItemId, newTaskId, item.mixDetails.paint_type, item.mixDetails.brand, item.mixDetails.color_code, item.mixDetails.quantity]
+                    `INSERT INTO tasks (title, description, business_unit_id, assigned_to_user_id, source_type, source_id, status)
+                     VALUES ($1, $2, $3, $4, 'sale_item', $5, 'Pending')`,
+                    [taskTitle, taskDescription, business_unit_id, assignedUserId, newSaleItemId]
                 );
             }
             // --- END OF TRIGGER ---
