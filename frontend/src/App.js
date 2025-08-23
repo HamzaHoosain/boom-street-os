@@ -14,11 +14,11 @@ import BusinessSelectorPage from './pages/BusinessSelectorPage';
 import CashManagementPage from './pages/CashManagementPage';
 import CustomerDetailsPage from './pages/CustomerDetailsPage';
 import CustomersPage from './pages/CustomersPage';
-import PaintMixingInterface from './components/pos/PaintMixingInterface';
 import DashboardPage from './pages/DashboardPage';
 import EmployeeDetailsPage from './pages/EmployeeDetailsPage';
 import EmployeesPage from './pages/EmployeesPage';
 import InvoicePage from './pages/InvoicePage';
+import A4InvoicePage from './pages/A4InvoicePage';
 import QuotePage from './pages/QuotePage';
 import PurchaseOrderPage from './pages/PurchaseOrderPage';
 import SalesOrderPage from './pages/SalesOrderPage';
@@ -38,6 +38,7 @@ import TransactionHistoryPage from './pages/TransactionHistoryPage';
 import MyTasksPage from './pages/MyTasksPage';
 import TaskDetailsPage from './pages/TaskDetailsPage';
 import PaintMixingPage from './pages/PaintMixingPage';
+import PaintMixDetailsModal from './components/pos/PaintMixDetailsModal';
 
 
 const ProtectedRoutes = () => {
@@ -63,11 +64,13 @@ function App() {
                 <Route path="/purchase-order/:poId" element={<PurchaseOrderPage />} /> 
                 <Route path="/sales-order/:soId" element={<SalesOrderPage />} /> 
                 <Route path="/remittance/:purchaseId" element={<RemittancePage />} /> 
+                <Route path="/a4-invoice/:saleId" element={<A4InvoicePage />} />
                 
                 {/* Parent for all main protected routes with sidebar/navbar */}
                 <Route element={<ProtectedRoutes />}>
                     <Route path="/" element={<DashboardPage />} />
                     <Route path="/pos" element={<PosPage />} />
+                    <Route path="/paint-mix-modal" element={<PaintMixDetailsModal />} />
                     <Route path="/transactions" element={<TransactionHistoryPage />} />
                     <Route path="/inventory" element={<InventoryPage />} />
                     <Route path="/stocktake" element={<StockTakePage />} />
@@ -87,10 +90,7 @@ function App() {
                     <Route path="/tasks" element={<MyTasksPage />} />
                     <Route path="/mix-task/:taskId" element={<PaintMixingPage />} />
                     <Route path="/task-details/:taskId" element={<TaskDetailsPage />} />
-
-
-                    {/* Temporary legacy route for compatibility, can be removed later */}
-                    <Route path='/paint-mixing' element={<PaintMixingInterface />} />
+                    {/* --- END OF CRITICAL ADDITION --- */}
                 </Route>
                 
                 <Route path="*" element={<Navigate to="/" />} />

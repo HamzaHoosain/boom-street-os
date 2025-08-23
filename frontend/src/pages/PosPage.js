@@ -17,7 +17,7 @@ import PaymentModal from '../components/pos/PaymentModal';
 import ChargeToAccountModal from '../components/pos/ChargeToAccountModal';
 import SearchBar from '../components/common/SearchBar';
 import PosLayout from '../components/pos/PosLayout';
-import PaintMixingInterface from '../components/pos/PaintMixingInterface';
+import PaintMixDetailsModal from '../components/pos/PaintMixDetailsModal';
 import '../components/pos/Pos.css';
 
 // --- Re-usable Form for the Expense Mode ---
@@ -95,12 +95,14 @@ const PosPage = () => {
     const [lastSalesOrderId, setLastSalesOrderId] = useState(null);
     const [lastPurchaseId, setLastPurchaseId] = useState(null);
     const [customerDetails, setCustomerDetails] = useState({ favourites: [], customPrices: {} });
+    const [showMixModal, setShowMixModal] = useState(false);
+    const [activeCartItem, setActiveCartItem] = useState(null);
 
     const VAT_RATE = 0.15;
 
     const availableModes = [];
     if (selectedBusiness?.type?.includes('Retail')) {
-        availableModes.push('sell', 'mix');
+        availableModes.push('sell');
     }
     if (selectedBusiness?.type === 'Bulk Inventory') {
         availableModes.push('buy');
@@ -108,7 +110,6 @@ const PosPage = () => {
     if (selectedBusiness) {
         availableModes.push('quote', 'sales_order', 'purchase_order', 'expense');
     }
-
     const resetState = () => {
         setError(''); setSuccess(''); setCartItems([]); setProducts([]);
         setFilteredProducts([]); setCategories([]); setSuppliers([]);
@@ -223,39 +224,63 @@ const PosPage = () => {
     };
 
     const handleAddToCart = (product) => {
-        setSuccess(''); setLastSaleId(null);
-        setLastPurchaseId(null); setLastQuoteId(null);
-        setLastPurchaseOrderId(null); setLastSalesOrderId(null);
-
-        const newCartItem = { ...product, cartId: Date.now() };
-        newCartItem.selling_price = parseFloat(product.selling_price) || 0;
+        // **IMPORTANT**: You must find the `id` of your "Mixed Paint - Custom" product in your database
+        // and put that number here. I am using 1494 as a placeholder.
+        const MIXED_PAINT_PRODUCT_ID = 1495;
         
-        const isStandardSale = mode === 'sell';
+        const isMixedPaint = product.id === MIXED_PAINT_PRODUCT_ID;
 
-        setCartItems(prev => {
-            const exists = prev.find(item => item.id === product.id);
+        // Clear any previous success/error messages
+        setSuccess('');
+        setLastSaleId(null);
+        // Reset all other document IDs as well
+        setLastPurchaseId(null);
+        setLastQuoteId(null);
+        setLastPurchaseOrderId(null);
+        setLastSalesOrderId(null);
 
-            if (exists && isStandardSale) {
-                return prev.map(item => {
-                    if (item.id !== product.id) return item;
-                    const newQuantity = item.quantity + 1;
-                    const lowStockWarning = mode === 'sales_order' && product.quantity_on_hand < newQuantity;
-                    return { ...item, quantity: newQuantity, lowStockWarning };
-                });
-            }
-            
-            newCartItem.quantity = 1;
-            if (mode === 'sales_order' && product.quantity_on_hand < 1) {
-                newCartItem.lowStockWarning = true;
+        // --- NEW, ROBUST LOGIC ---
+        if (isMixedPaint) {
+            // For a mixed paint, we prepare the item but DON'T add it to the cart yet.
+            // We set it as the active item and open the modal first.
+            const newCartItem = {
+                ...product,
+                cartId: Date.now(), // Generate a temporary ID
+                quantity: 1, // Default, will be updated by modal
+                selling_price: parseFloat(product.selling_price) || 0,
+                mixDetails: {}
+            };
+            setActiveCartItem(newCartItem);
+            setShowMixModal(true); // Open the modal
+        } else {
+            // For all standard products, use the original, working logic.
+            const newCartItem = {
+                ...product,
+                cartId: Date.now(),
+                quantity: 1,
+                selling_price: parseFloat(product.selling_price) || 0
+            };
+
+            const customPrice = customerDetails.customPrices[product.id];
+            if (customPrice !== undefined) {
+                newCartItem.selling_price = parseFloat(customPrice);
             }
 
-            if(isStandardSale){
-                const customPrice = customerDetails.customPrices[product.id];
-                newCartItem.selling_price = parseFloat(customPrice !== undefined ? customPrice : product.selling_price) || 0;
-            }
-            
-            return [...prev, newCartItem];
-        });
+            const isQuantityBasedDoc = mode === 'sell' || mode === 'sales_order';
+
+            setCartItems(prev => {
+                const exists = prev.find(item => item.id === product.id);
+                if (exists && isQuantityBasedDoc) {
+                    return prev.map(item => {
+                        if (item.id !== product.id) return item;
+                        const newQuantity = item.quantity + 1;
+                        const lowStockWarning = mode === 'sales_order' && product.quantity_on_hand < newQuantity;
+                        return { ...item, quantity: newQuantity, lowStockWarning };
+                    });
+                }
+                return [...prev, newCartItem];
+            });
+        }
     };
     
     const handleRemoveFromCart = (itemToRemove) => {
@@ -356,6 +381,23 @@ const PosPage = () => {
         } catch (err) {
             setError((err.response?.data?.msg) || `Failed to process charge out.`);
         }
+    };
+
+      const handleSaveMixDetails = (mixDetails) => {
+        // Take the activeCartItem we stored, which has the product info,
+        // and combine it with the details from the modal.
+        const finalCartItem = {
+            ...activeCartItem,
+            quantity: parseFloat(mixDetails.quantity),
+            mixDetails // Attach the full details object
+        };
+        
+        // Now, add the fully formed item to the cart.
+        setCartItems(prev => [...prev, finalCartItem]);
+
+        // Clean up and close the modal.
+        setShowMixModal(false);
+        setActiveCartItem(null);
     };
 
     const handleSaveQuote = async () => {
@@ -495,8 +537,7 @@ const PosPage = () => {
                 </div>
             )}
             
-            {mode === 'expense' ? ( <ExpenseForm onLogExpense={handleLogExpense} /> ) : 
-                 mode === 'mix' ? ( <PaintMixingInterface /> ) : (
+             {mode === 'expense' ? ( <ExpenseForm onLogExpense={handleLogExpense} /> ) : (
                 <PosLayout 
                     leftPanel={null}
                     mainContent={mainContentPanel}
@@ -509,6 +550,13 @@ const PosPage = () => {
             </Modal>
             <Modal show={showSupplierModal} onClose={() => setShowSupplierModal(false)} title="Select a Supplier">
                 <SupplierSearchModal onSelect={handleSelectSupplier} onClose={() => setShowSupplierModal(false)} selectedBusiness={selectedBusiness} />
+            </Modal>
+            <Modal show={showMixModal} onClose={() => setShowMixModal(false)} title="Enter Mixed Paint Details">
+                <PaintMixDetailsModal 
+                    onSave={handleSaveMixDetails}
+                    onClose={() => setShowMixModal(false)}
+                    initialDetails={activeCartItem?.mixDetails}
+                />
             </Modal>
             <Modal show={showPaymentModal} onClose={() => setShowPaymentModal(false)} title="Payment">
                 <PaymentModal 

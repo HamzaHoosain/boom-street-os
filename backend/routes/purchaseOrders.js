@@ -206,4 +206,30 @@ router.post('/:poId/receive', authMiddleware, async (req, res) => {
     }
 });
 
+// @route   GET api/purchase-orders/:poId/receipts
+// @desc    Get the history of all items received for a specific Purchase Order
+router.get('/:poId/receipts', authMiddleware, async (req, res) => {
+    const { poId } = req.params;
+    try {
+        const query = `
+            SELECT 
+                por.id, 
+                por.receipt_date, 
+                por.quantity_received,
+                p.name as product_name,
+                u.first_name || ' ' || u.last_name as receiver_name
+            FROM purchase_order_receipts por
+            JOIN products p ON por.product_id = p.id
+            JOIN users u ON por.received_by_user_id = u.id
+            WHERE por.purchase_order_id = $1
+            ORDER BY por.receipt_date DESC
+        `;
+        const receiptsResult = await db.query(query, [poId]);
+        res.json(receiptsResult.rows);
+    } catch (err) {
+        console.error(`Get PO Receipts Error for ID ${poId}:`, err.message);
+        res.status(500).send('Server Error');
+    }
+});
+
 module.exports = router;

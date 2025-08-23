@@ -1,0 +1,41 @@
+/* frontend/src/components/pos/PaintMixDetailsModal.css */
+
+.paint-mix-modal-content {
+    padding: 10px;
+    min-width: 450px; /* Give the modal some space */
+}
+
+.paint-mix-modal-content h4 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.modal-divider {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 2rem 0 1.5rem 0;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end; /* Align buttons to the right */
+    gap: 1rem;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #eee;
+}
+
+/* Re-use general button styles if you have them, otherwise use these */
+.btn-secondary {
+    padding: 10px 20px;
+    border: 1px solid #6c757d;
+    background-color: #6c757d;
+    color: white;
+    border-radius: 5px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
