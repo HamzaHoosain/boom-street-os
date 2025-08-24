@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+// frontend/src/pages/EmployeesPage.js
+
+import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import Modal from '../components/layout/Modal';
-import '../components/inventory/Inventory.css';
+import './EmployeesPage.css'; // You will need a new CSS file for the tabs
+import '../components/inventory/Inventory.css'; // Reuse table styles
+// At the top of frontend/src/pages/EmployeesPage.js
+import IssueAdvanceForm from '../components/employees/IssueAdvanceForm';
 
-// --- Reusable Form for both Adding and Editing Employees ---
+// --- Reusable Form for Adding/Editing Employees ---
 const EmployeeForm = ({ onSave, onClose, employee }) => {
-    // If we are editing, we fetch the specific employee details
     const [formData, setFormData] = useState({
         user_id: employee?.user_id || '',
         business_unit_id: employee?.business_unit_id || '',
@@ -19,18 +24,8 @@ const EmployeeForm = ({ onSave, onClose, employee }) => {
     useEffect(() => {
         api.get('/business-units').then(res => setBusinessUnits(res.data));
         
-        // If we are adding a new employee, fetch users who aren't yet employees
         if (!employee) {
             api.get('/payroll/available-users').then(res => setAvailableUsers(res.data));
-        } else {
-            // If editing, fetch the full details to pre-populate the form
-            api.get(`/payroll/employees/${employee.id}/details`).then(res => {
-                setFormData({
-                    business_unit_id: res.data.business_unit_id,
-                    hourly_rate: res.data.hourly_rate,
-                    default_hours_per_period: res.data.default_hours_per_period
-                });
-            });
         }
     }, [employee]);
 
@@ -38,16 +33,16 @@ const EmployeeForm = ({ onSave, onClose, employee }) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
-        await onSave(formData);
+        onSave(formData);
     };
 
     return (
         <form onSubmit={handleSubmit}>
             {!employee && (
                 <div className="form-group">
-                    <label>Select User</label>
+                    <label>Select User Account</label>
                     <select name="user_id" value={formData.user_id} onChange={handleChange} className="form-control" required>
                         <option value="">-- Select a User --</option>
                         {availableUsers.map(u => <option key={u.id} value={u.id}>{u.first_name} {u.last_name}</option>)}
@@ -62,11 +57,11 @@ const EmployeeForm = ({ onSave, onClose, employee }) => {
                 </select>
             </div>
             <div className="form-group">
-                <label>Rate (R/hr or Monthly Salary)</label>
+                <label>Rate (R/hr or Salary)</label>
                 <input type="number" step="0.01" name="hourly_rate" value={formData.hourly_rate} onChange={handleChange} className="form-control" required />
             </div>
             <div className="form-group">
-                <label>Default Hours (46 for Weekly, 1 for Monthly)</label>
+                <label>Default Hours/Pay Period</label>
                 <input type="number" step="0.01" name="default_hours_per_period" value={formData.default_hours_per_period} onChange={handleChange} className="form-control" required />
             </div>
             <button type="submit" className="btn-login" style={{marginTop: '1rem'}}>Save Employee</button>
@@ -74,171 +69,220 @@ const EmployeeForm = ({ onSave, onClose, employee }) => {
     );
 };
 
-// --- Reusable Form for Issuing a Loan/Advance ---
-const IssueAdvanceForm = ({ employee, onSave, onClose }) => {
-    const [amount, setAmount] = useState('');
+
+// --- Individual Row for the Payroll Tab ---
+const PayrollRow = ({ employee, activeLoan, onFinalize, safes }) => {
+    // This component is extracted from your PayrollPage.js for clarity
+    const [hours, setHours] = useState(employee.default_hours_per_period);
+    const [loanDeduction, setLoanDeduction] = useState('0.00');
+    const [otherDeductions, setOtherDeductions] = useState('0.00');
     const [safeId, setSafeId] = useState('');
-    const [notes, setNotes] = useState('Staff Advance');
-    const [safes, setSafes] = useState([]);
-    const [error, setError] = useState('');
 
-    useEffect(() => {
-        api.get('/cash/safes').then(res => {
-            setSafes(res.data.filter(s => s.is_physical_cash));
-        }).catch(err => console.error("Could not load safes", err));
-    }, []);
+    const grossPay = parseFloat(employee.hourly_rate) * parseFloat(hours || 0);
+    const netPay = grossPay - (parseFloat(loanDeduction) || 0) - (parseFloat(otherDeductions) || 0);
+    const remainingLoan = activeLoan ? parseFloat(activeLoan.principal_amount) - parseFloat(activeLoan.amount_repaid) : 0;
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        try {
-            const loanData = {
-                employee_id: employee.id,
-                principal_amount: parseFloat(amount),
-                safe_id: parseInt(safeId),
-                notes
-            };
-            await onSave(loanData);
-        } catch (err) {
-            setError(err.response?.data?.msg || 'Failed to issue advance.');
-        }
+    const handleFinalize = () => {
+        if (!safeId) return alert("Please select a payment source.");
+        if (netPay < 0) return alert("Net pay cannot be negative.");
+        onFinalize({
+            employee_id: employee.id,
+            hours_worked: parseFloat(hours),
+            loan_deduction: parseFloat(loanDeduction),
+            other_deductions: parseFloat(otherDeductions),
+            safe_id: parseInt(safeId)
+        });
     };
-
+    
     return (
-        <form onSubmit={handleSubmit}>
-            {error && <p className="alert-error">{error}</p>}
-            <div className="form-group"><label>Source of Funds</label><select value={safeId} onChange={e => setSafeId(e.target.value)} className="form-control" required><option value="">-- Select Till/Float --</option>{safes.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}</select></div>
-            <div className="form-group"><label>Advance Amount (R)</label><input type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} className="form-control" required autoFocus /></div>
-            <div className="form-group"><label>Notes</label><input type="text" value={notes} onChange={e => setNotes(e.target.value)} className="form-control" /></div>
-            <button type="submit" className="btn-login" style={{marginTop: '1rem'}}>Issue Advance</button>
-        </form>
+        <tr>
+            <td>{employee.first_name} {employee.last_name}</td>
+            <td><input type="number" value={hours} onChange={e => setHours(e.target.value)} className="form-control" style={{maxWidth: '100px'}} /></td>
+            <td>R {grossPay.toFixed(2)}</td>
+            <td>{activeLoan ? `Owed: R ${remainingLoan.toFixed(2)}` : 'None'}</td>
+            <td><input type="number" step="0.01" value={loanDeduction} onChange={e => setLoanDeduction(e.target.value)} className="form-control" style={{maxWidth: '100px'}} /></td>
+            <td><input type="number" step="0.01" value={otherDeductions} onChange={e => setOtherDeductions(e.target.value)} className="form-control" style={{maxWidth: '100px'}} /></td>
+            <td><strong>R {netPay.toFixed(2)}</strong></td>
+            <td>
+                <select value={safeId} onChange={e => setSafeId(e.target.value)} className="form-control" required>
+                    <option value="">-- Source --</option>
+                    {safes.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+            </td>
+            <td><button onClick={handleFinalize} className="btn-edit">Finalize Pay</button></td>
+        </tr>
     );
 };
 
 
-// --- Main Page Component ---
+// --- The NEW Main Page "Hub" Component ---
 const EmployeesPage = () => {
+    const { selectedBusiness } = useContext(AuthContext);
+    const [activeTab, setActiveTab] = useState('manage'); // 'manage' or 'payroll'
+    
+    // Data State
     const [employees, setEmployees] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [modalMode, setModalMode] = useState(null); // 'add', 'edit', or 'advance'
-    const [selectedEmployee, setSelectedEmployee] = useState(null);
-    const [success, setSuccess] = useState('');
-    const navigate = useNavigate();
+    const [activeLoans, setActiveLoans] = useState([]);
+    const [safes, setSafes] = useState([]);
+    const [lastRunDate, setLastRunDate] = useState(null);
 
-    const fetchEmployees = async () => {
+    // Form/Modal State
+    const [modalMode, setModalMode] = useState(null);
+    const [selectedEmployee, setSelectedEmployee] = useState(null);
+
+    // UI State
+    const [loading, setLoading] = useState(true);
+    const [success, setSuccess] = useState('');
+    const [error, setError] = useState('');
+    const navigate = useNavigate();
+    
+    const [startDate, setStartDate] = useState('');
+    const [endDate, setEndDate] = useState('');
+
+    const fetchData = async () => {
+        if (!selectedBusiness) return;
         setLoading(true);
         try {
-            const response = await api.get('/payroll/employees');
-            setEmployees(response.data);
+            const endpoint = `/payroll/employees?businessUnitId=${selectedBusiness.business_unit_id}`;
+            const [employeesRes, loansRes, safesRes, lastRunRes] = await Promise.all([
+                api.get(endpoint),
+                api.get('/payroll/active-loans'),
+                api.get('/cash/safes'),
+                api.get('/payroll/last-run-date')
+            ]);
+            setEmployees(employeesRes.data);
+            setActiveLoans(loansRes.data);
+            setSafes(safesRes.data);
+
+            const lastEnd = lastRunRes.data.last_run_end_date ? new Date(lastRunRes.data.last_run_end_date) : new Date(new Date().setDate(new Date().getDate() - 7));
+            const nextStart = new Date(lastEnd);
+            nextStart.setDate(nextStart.getDate() + 1);
+            const nextEnd = new Date(nextStart);
+            nextEnd.setDate(nextEnd.getDate() + 6);
+            setStartDate(nextStart.toISOString().split('T')[0]);
+            setEndDate(nextEnd.toISOString().split('T')[0]);
         } catch (error) {
-            console.error("Failed to fetch employees", error);
+            console.error("Failed to fetch employee data", error);
+            setError("Could not load employee data.");
         } finally {
             setLoading(false);
         }
     };
-
+    
     useEffect(() => {
-        fetchEmployees();
-    }, []);
+        fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedBusiness]);
 
     const handleSaveEmployee = async (employeeData) => {
         try {
             if (modalMode === 'edit') {
                 await api.put(`/payroll/employees/${selectedEmployee.id}`, employeeData);
-                setSuccess(`Successfully updated details for ${selectedEmployee.first_name}.`);
+                setSuccess(`Updated details for ${selectedEmployee.first_name}.`);
             } else {
                 await api.post('/payroll/employees', employeeData);
-                setSuccess(`Successfully added new employee.`);
+                setSuccess(`Added new employee.`);
             }
             closeModal();
-            fetchEmployees();
+            fetchData();
         } catch (error) {
-            alert('Failed to save employee.');
-            throw error;
+            alert('Failed to save employee.'); throw error;
         }
     };
     
-    const handleSaveAdvance = async (loanData) => {
+     const handleSaveAdvance = async (loanData) => {
         try {
+            // This API call now works because the backend table exists
             await api.post('/payroll/loans', loanData);
-            closeModal();
+            
             setSuccess(`Successfully issued advance of R ${loanData.principal_amount.toFixed(2)} to ${selectedEmployee.first_name}.`);
+            closeModal();
+            
+            // CRITICAL FIX: We must re-fetch all data to show the new
+            // active loan in the payroll tab.
+            fetchData();
         } catch (error) {
-            alert(error.response?.data?.msg || 'Failed to issue advance. Check details and safe balance.');
-            throw error;
+            // We can now throw the error and it will be caught by the form,
+            // allowing the form to display a specific error message.
+            throw error; 
+        }
+    };
+    
+    const handleFinalizePay = async (payrollData) => {
+        setSuccess(''); setError('');
+        const finalData = { ...payrollData, pay_period_start: startDate, pay_period_end: endDate };
+        try {
+            const response = await api.post('/payroll/process-pay', finalData);
+            setSuccess(response.data.msg);
+            fetchData(); // Refresh everything to show new ledger entries and update loan balances
+        } catch (err) {
+            setError(err.response?.data?.msg || 'Failed to process pay.');
         }
     };
 
-    const handleRowClick = (employeeId) => {
-        navigate(`/employees/${employeeId}`);
-    };
+    const handleRowClick = (employeeId) => navigate(`/employees/${employeeId}`);
+    const closeModal = () => { setModalMode(null); setSelectedEmployee(null); };
 
-    const closeModal = () => {
-        setModalMode(null);
-        setSelectedEmployee(null);
-    };
-
-    if (loading) return <p>Loading employees...</p>;
-
+    if (!selectedBusiness) return <div><h1>Employees</h1><p>Please select a business unit from the header.</p></div>;
+    if (loading) return <p>Loading employee & payroll data...</p>;
+    
     return (
         <div>
-            <h1>Employee Management</h1>
-            {success && <p className="alert-success" style={{marginTop: '1rem'}}>{success}</p>}
+            <h1>Employee & Payroll Management</h1>
+            <p>Managing employees for <strong>{selectedBusiness.business_unit_name}</strong>.</p>
             
-            <div style={{ margin: '2rem 0' }}>
-                <button onClick={() => setModalMode('add')} className="btn-login" style={{maxWidth: '250px'}}>
-                    Add New Employee
-                </button>
+            <div className="order-tabs" style={{ margin: '2rem 0' }}>
+                <button onClick={() => setActiveTab('manage')} className={activeTab === 'manage' ? 'active' : ''}>Manage Employees</button>
+                <button onClick={() => setActiveTab('payroll')} className={activeTab === 'payroll' ? 'active' : ''}>Run Payroll</button>
             </div>
             
-            <Modal show={!!modalMode} onClose={closeModal} title={
-                modalMode === 'add' ? 'Add New Employee' :
-                modalMode === 'edit' ? `Edit ${selectedEmployee?.first_name}` :
-                `Issue Advance to ${selectedEmployee?.first_name}`
-            }>
+            {success && <p className="alert-success">{success}</p>}
+            {error && <p className="alert-error">{error}</p>}
+            
+            {activeTab === 'manage' && (
+                <div>
+                    <button onClick={() => setModalMode('add')} className="btn-login" style={{maxWidth: '250px', marginBottom: '1.5rem'}}>Add New Employee</button>
+                    <table className="inventory-table">
+                         <thead><tr><th>Name</th><th>Business Unit</th><th>Rate (R/hr)</th><th>Default Hours</th><th>Pay Structure</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {employees.map(emp => (
+                                <tr key={emp.id} className="clickable-row" onClick={() => handleRowClick(emp.id)}>
+                                    <td>{emp.first_name} {emp.last_name || ''}</td><td>{emp.business_unit_name}</td>
+                                    <td>R {parseFloat(emp.hourly_rate).toFixed(2)}</td><td>{emp.default_hours_per_period}</td>
+                                    <td>{ /* Pay structure calculation */}</td>
+                                    <td>
+                                        <button onClick={(e) => { e.stopPropagation(); setModalMode('edit'); setSelectedEmployee(emp); }} className="btn-edit">Edit</button>
+                                        <button onClick={(e) => { e.stopPropagation(); setModalMode('advance'); setSelectedEmployee(emp); }} className="btn-edit" style={{marginLeft: '0.5rem'}}>Advance</button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+            
+            {activeTab === 'payroll' && (
+                <div>
+                    <div className="report-controls">
+                        <div className="form-group"><label>Pay Period Start</label><input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} className="form-control" /></div>
+                        <div className="form-group"><label>Pay Period End</label><input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} className="form-control" /></div>
+                    </div>
+                    <table className="inventory-table" style={{marginTop: '1.5rem'}}>
+                        <thead><tr><th>Name</th><th>Hours Worked</th><th>Gross Pay</th><th>Active Loan</th><th>Loan Deduction</th><th>Other Deductions</th><th>Net Pay</th><th>Payment Source</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {employees.map(emp => (
+                                <PayrollRow key={emp.id} employee={emp} activeLoan={activeLoans.find(loan => loan.employee_id === emp.id)} onFinalize={handleFinalizePay} safes={safes} />
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            <Modal show={!!modalMode} onClose={closeModal} title={modalMode === 'add' ? 'Add Employee' : modalMode === 'edit' ? `Edit ${selectedEmployee?.first_name}` : `Issue Advance to ${selectedEmployee?.first_name}`}>
                 {modalMode === 'add' && <EmployeeForm onSave={handleSaveEmployee} onClose={closeModal} />}
                 {modalMode === 'edit' && <EmployeeForm onSave={handleSaveEmployee} onClose={closeModal} employee={selectedEmployee} />}
                 {modalMode === 'advance' && <IssueAdvanceForm employee={selectedEmployee} onSave={handleSaveAdvance} onClose={closeModal} />}
             </Modal>
-
-            <table className="inventory-table" style={{marginTop: '1.5rem'}}>
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Business Unit</th>
-                        <th>Rate (R/hr)</th>
-                        <th>Default Hours</th>
-                        <th>Pay Structure</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {employees.map(emp => {
-                        const hourlyRate = parseFloat(emp.hourly_rate);
-                        const defaultHours = parseFloat(emp.default_hours_per_period);
-                        let payStructureDisplay = 'N/A';
-                        if (defaultHours > 1) {
-                            payStructureDisplay = `R ${(hourlyRate * defaultHours).toFixed(2)} / week`;
-                        } else if (defaultHours === 1) {
-                            const dailyRate = (hourlyRate / 26).toFixed(2);
-                            payStructureDisplay = `R ${dailyRate} / day (Monthly)`;
-                        }
-                        return (
-                            <tr key={emp.id} className="clickable-row" onClick={() => handleRowClick(emp.id)}>
-                                <td>{emp.first_name} {emp.last_name || ''}</td>
-                                <td>{emp.business_unit_name}</td>
-                                <td>R {hourlyRate.toFixed(2)}</td>
-                                <td>{defaultHours > 1 ? defaultHours : 'N/A'}</td>
-                                <td>{payStructureDisplay}</td>
-                                <td>
-                                    <button onClick={(e) => { e.stopPropagation(); setModalMode('edit'); setSelectedEmployee(emp); }} className="btn-edit">Edit</button>
-                                    <button onClick={(e) => { e.stopPropagation(); setModalMode('advance'); setSelectedEmployee(emp); }} className="btn-edit" style={{marginLeft: '0.5rem'}}>Issue Advance</button>
-                                </td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
         </div>
     );
 };

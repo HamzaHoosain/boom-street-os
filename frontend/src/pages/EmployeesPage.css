@@ -1,0 +1,29 @@
+/* frontend/src/pages/EmployeesPage.css */
+
+/*
+* We will reuse the tab styling from the Order Management page for a
+* consistent look and feel across the application.
+*/
+.order-tabs {
+    display: flex;
+    border-bottom: 2px solid #4a5a70;
+    margin-bottom: 20px;
+}
+
+.order-tabs button {
+    padding: 12px 25px;
+    border: none;
+    background-color: transparent;
+    color: #a0a0a0;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.2s ease, border-bottom 0.2s ease;
+    border-bottom: 4px solid transparent;
+    margin-bottom: -2px; /* Align the bottom border with the container's border */
+}
+
+.order-tabs button.active {
+    color: #ffffff;
+    border-bottom: 4px solid #007bff;
+}
